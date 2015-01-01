@@ -262,11 +262,12 @@ def episodios(item):
         <span class="subtitle"><span class="nomobile">Desde 30-08-2010</span><span class="mobile">30-08-2010</span></span><div class="episodeActions"><button class="big defaultPopup" href="/links/viewepisode/id/475009"><span class="nomobile">Ver enlaces</span><span class="mobile">Ver</span></button><div class="action" data-action="seen"><i class="icon" ></i> <span class="seen">visto</span></div></div>
         </div>
         '''
-        patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">([^<]+)</span>([^<]+)</span>'
+        patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">([^<]+)</span>([^<]+)</span>(\s*</div>\s*<span[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></span><div[^>]*><button[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></button><div class="action([^"]*)" data-action="seen">)?'
         matches = re.compile(patron,re.DOTALL).findall(bloque_episodios)
         
-        for scrapedurl,numero,scrapedtitle in matches:
-            title = nombre_temporada+" "+numero+" "+scrapertools.htmlclean(scrapedtitle)
+        for scrapedurl,numero,scrapedtitle,info,visto in matches:
+            visto_string = "[visto] " if visto.strip()=="active" else ""
+            title = visto_string+nombre_temporada+" "+numero+" "+scrapertools.htmlclean(scrapedtitle)
             thumbnail = ""
             plot = ""
             #http://www.pordede.com/peli/the-lego-movie
