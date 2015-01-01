@@ -482,6 +482,9 @@ def findvideos(item):
 def play(item):
     logger.info("pelisalacarta.channels.pordede play url="+item.url)
 
+    # Marcar como visto
+    checkseen(item.extra.split("|")[1])
+
     # Hace la llamada
     '''
     POST /aporte/ytw7mr31eb32r80rt
@@ -537,3 +540,14 @@ def play(item):
         videoitem.channel = __channel__
 
     return itemlist    
+
+def checkseen(item):
+
+    logger.info("pelisalacarta.channels.pordede checkseen "+item)
+
+    if "/viewepisode/" in item:
+        headers = DEFAULT_HEADERS[:]
+        episode = item.split("/")[-1]
+        scrapertools.downloadpage("http://www.pordede.com/ajax/action", post="model=episode&id="+episode+"&action=seen&value=1")
+
+    return True
