@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<version>
+	<name>peliculasyonkis</name>
+	<tag>2</tag>
+	<date>02/05/2011</date>
+	<changes>Arreglado un problema con la expresión regular de los listados de pelis. Ahora salen muchas más :)</changes>
+</version>

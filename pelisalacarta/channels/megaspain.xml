@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<version>
+	<name>megaspain</name>
+	<tag>5</tag>
+	<date>30/07/2013</date>
+	<changes>Implementado mega-streamer.net como servidor de video</changes>
+</version>

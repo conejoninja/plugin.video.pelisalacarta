@@ -1,0 +1,217 @@
+3.2.10
+
+    Cambios comunes a todas las plataformas
+    
+        Canales
+            En series.ly la sección "Mis series" ya sale ordenada alfabéticamente
+            Arreglado buscador en cuevana
+            Mejorada búsqueda de episodios en discoverymx
+            Arreglado divxonline, y añadido listado alfabético + buscador
+            Actualizado gaypornshare por cambios en la web
+            
+        Conectores
+            Actualizado patron de turbobit
+            Actualizado patron de rapidgator
+            Mejorada detección vídeos borrados en VK
+
+    Otros
+    
+        Soporte para animeflv, cineblog01, cuevana, cinevos, bajui, divxonline en el buscador
+        Ya se pueden poner login y password de series.ly en la configuración de WiiMC
+        Nuevos sitios para agregar series a la biblioteca de XBMC/Boxee: seriespepito, tumejortv, shurhd y shurweb
+        
+    HTML
+        Nueva plataforma para ver pelisalacarta con un navegador estándar
+
+3.2.9
+
+    Cambios comunes a todas las plataformas
+    
+        Canales
+            Restaurado canal PelisPekes
+            Arreglado serieonline
+            Arreglado tumejortv
+            Nuevo canal italiano filmsenzalimiti
+    
+        Conectores
+            Nuevo conector para streamcloud
+            Nuevo conector para allbox4
+            Arreglado conector moevideos
+            Arreglado conector divxstage
+            Arreglado conector con movshare
+            Mejorados patrones en VK
+            Mejorados patrones conector "directo" para peliculasid, gracias a xboxfan
+            Mejorados patrones en moevideos (gracias a xboxfan)
+        
+    XBMC        
+        Ya coge bien el título en descargas y favoritos
+        Tras actualizar el plugin refresca en lugar de entrar en otro nivel
+        El updater ya muestra el icono correctamente
+        Dos nuevos conectores filenium/real-debrid para Fileflyer y Gigasize
+        Arreglado flag visto en seriesly por talixme
+
+3.2.8
+    First weekly release
+
+3.2.7
+
+- Bugfix release
+- Solved a problem with Filenium in XBMC
+- First release of new connector system in boxee and plex media server
+
+3.2.6
+
+- New connector system for better handling errors
+
+3.2.5
+
+- First version after megaupload close
+- New server connectors
+
+    Novamov (@mrfloffy)
+    Videoweed (actualizado por @mrfloffy)
+    Modovideo (@bandavi)
+    Ovfile (@bandavi)
+    Putlocker (@bandavi)
+    Royalvids (@bandavi)
+    Sockshare (@bandavi)
+    Mediafire (@jesus)
+    Rutube (@jesus)
+    Stagero (@jesus)
+    Wupload Premium (@jesus, de momento sigue sin funcionar el modo “free”)
+    Dep0sitfiles (@jesus, sólo con Filenium)
+    Allmyvideos (@jesus, sólo con Filenium)
+    Hdplay (@jesus)
+
+- New channels
+	
+	cinevos
+	beeg
+	
+- Erased channels
+
+	Asia Team
+	Cine Adicto
+	Cinegratis
+	DeLaTV
+	Descargapelis
+	DL-More
+	Documentalesyonkis
+	Filmixt
+	FilmesonlineBr
+	IslaPelículas
+	Liberateca
+	NoLoMires
+	Peliculas21
+	Pelis Pekes
+	Redes TV
+	Series 21
+
+3.2.3
+
+- Added captcha keyboard for seriesyonkis
+- Trailer search fixed
+- Lot of channel fixes and updates
+- New channels
+    Megaupload-premium (FR)
+    DL-more (FR)
+    moviezet by @mrfloffy
+    peliculasaudiolatino by @Dalim
+    animeflv by @MarioXD
+    descarregadirecta (CAT) by @mrfloffy
+- New connectors
+    Divxstage (@Dalim)
+    Videobam (@Dalim)
+    Vidbux (@Dalim)
+    DownUpload (@Dalim)
+    Fileserve (@jesus)
+
+3.2
+
+- New connector modules now smarter
+- A lot of fixed channels
+- Three play modes
+
+3.1.1
+
+- Global search fixed
+- Cuevana channel subtitles and issues fixed (thanks to xextil, arormoser and esevece)
+- Megaupload support without premium account (thanks to icefilms addon author and xextil)
+- Added new channel asiateam
+- Added new channel sofacine
+
+3.1
+
+- New channels
+    internapoli (@jesus)
+    robinfilm (@jesus)
+    liberateca (@jesus)
+    serieshentai (@kira)
+    newhd (@xextil)
+    buenaisla (@xextil)
+    islapeliculas (@xextil)
+    seriesdanko (@bandavi)
+
+- New server connectors
+    facebook
+    userporn
+    adnstream
+
+- Fixed existing website channels and server connectors
+- Several minor bugfixes
+
+3.0
+
+- New internal multiplafrom structure
+- Fixed channels
+
+2.20
+
+- New channels:
+    tubehentai (@dreamlomax),
+    myhentaitube (@dreamlomax)
+    xhamster (@dreamlomax)
+    sonolatino (@bandavi)
+    megalive (@bandavi)
+    cuevana (@jesus)
+    somosmovies (@jesus)
+    peliculas-flv (@jesus)
+    seriematic (@jesus)
+	serieonline (@jesus)
+
+- New server connectors:
+    Yahoo (@bandavi)
+    Vimeo (@bandavi)
+    
+    
+2.19
+
+- New channels vagos (@truenon), documentalesatonline2 (@blablableble), descargapelis (@blablableble)
+- Megavideo fixed, now with hd support
+- Hidden password in settings
+- Removed ovasid channel
+- Login for private pages (vagos, mocosoftx)
+- Fanart added
+- And many fixes...
+
+
+2.18
+
+- Fixed bugs in channels
+- 5 new channels: programastvonline, cineblog01, peliculasonlineflv, pelis pekesdelatv series
+- Main menu now filter by type and language
+- 1 new server: vkontakte.ru
+- Favorites now can be stored on a samba folder
+
+2.17.1
+
+- Removed download option
+- Updated and fixed channels
+
+2.17.0
+
+- First addon repository version (Dharma)
+
+For more info visit http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta
+
+__________________

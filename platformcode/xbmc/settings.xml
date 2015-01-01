@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <setting id="player_type" type="enum" values="Auto|MPlayer|DVDPlayer" label="30000" default="2"/>
+    <setting id="updatecheck2" type="bool" label="30001" default="true"/>
+    <setting id="updatechannels" type="bool" label="30004" default="true"/>
+    <setting id="enableadultmode" type="bool" label="30002" default="false"/>
+    <setting id="debug" type="bool" label="30003" default="false"/>
+    <setting id="default_action" type="enum" lvalues="30006|30007|30008|30009" label="30005" default="0"/>
+    <setting id="thumbnail_type" type="enum" lvalues="30011|30012|30200" label="30010" default="2"/>
+    <setting id="languagefilter" type="enum" lvalues="30025|30026|30027|30028|30029|30046|30016|30023|30036|30037" values="0|1|2|3|4" label="30019" default="0"/>
+    <setting id="forceview" type="bool" label ="30043" default="false"/>
+    <setting id="player_mode" type="enum" values="Direct|SetResolvedUrl|Built-In|Download and Play" label="30044" default="0"/>
+
+    <setting type="sep" />
+    <setting id="fileniumpremium" type="bool" label="Filenium" default="false"/>
+    <setting id="fileniumuser" type="text" label="30014" enable="eq(-1,true)" default=""/>
+    <setting id="fileniumpassword" type="text" label="30015" option="hidden" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="realdebridpremium" type="bool" label="Real-Debrid" default="false"/>
+    <setting id="realdebriduser" type="text" label="30014"  enable="eq(-1,true)" default=""/>
+    <setting id="realdebridpassword" type="text" option="hidden" label="30015" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="alldebridpremium" type="bool" label="Alldebrid" default="false"/>
+    <setting id="alldebriduser" type="text" label="30014"  enable="eq(-1,true)" default=""/>
+    <setting id="alldebridpassword" type="text" option="hidden" label="30015" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="uploadedtopremium" type="bool" label="Uploaded.to" default="false"/>
+    <setting id="uploadedtouser" type="text" label="30014"  enable="eq(-1,true)" default=""/>
+    <setting id="uploadedtopassword" type="text" option="hidden" label="30015" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="nowvideopremium" type="bool" label="Nowvideo" default="false"/>
+    <setting id="nowvideouser" type="text" label="30014"  enable="eq(-1,true)" default=""/>
+    <setting id="nowvideopassword" type="text" option="hidden" label="30015" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="mocosoftxaccount" type="bool" label="MocosoftX" default="false"/>
+    <setting id="mocosoftxuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
+    <setting id="mocosoftxpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="serieslyaccount" type="bool" label="Series.ly" default="false"/>
+    <setting id="serieslyuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
+    <setting id="serieslypassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />                                                                                                                                                        
+    <setting id="stormtvaccount" type="bool" label="stormtv" default="false"/>                                                                                                 
+    <setting id="stormtvuser" type="text" label="User"  enable="eq(-1,true)" default=""/>                                                                                        
+    <setting id="stormtvpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/> 
+
+    <setting type="sep" />                                                                                                                                                        
+    <setting id="megaspainaccount" type="bool" label="megaspain" default="false"/>                                                                                                 
+    <setting id="megaspainuser" type="text" label="User"  enable="eq(-1,true)" default=""/>                                                                                        
+    <setting id="megaspainpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/> 
+
+    <setting type="sep" />                                                                                                                                                        
+    <setting id="megahdaccount" type="bool" label="megaHD" default="false"/>                                                                                                 
+    <setting id="megahduser" type="text" label="User"  enable="eq(-1,true)" default=""/>                                                                                        
+    <setting id="megahdpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/> 
+
+    <setting type="sep" />
+    <setting id="megaforoaccount" type="bool" label="megaforo" default="false"/>
+    <setting id="megaforouser" type="text" label="User"  enable="eq(-1,true)" default=""/>
+    <setting id="megaforopassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="pordedeaccount" type="bool" label="pordede" default="false"/>
+    <setting id="pordedeuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
+    <setting id="pordedepassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="quebajamosaccount" type="bool" label="quebajamos" default="false"/>
+    <setting id="quebajamosuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
+    <setting id="quebajamospassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="zampaseriesaccount" type="bool" label="zampaseries" default="false"/>
+    <setting id="zampaseriesuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
+    <setting id="zampaseriespassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="playmaxaccount" type="bool" label="playmax" default="false"/>
+    <setting id="playmaxuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
+    <setting id="playmaxpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting id="jdownloader_enabled" type="bool" label="JDownloader" default="false"/>
+    <setting id="jdownloader" type="text" label="URL" default="http://127.0.0.1:10025"/>
+
+    <setting id="pyload_enabled" type="bool" label="pyLoad" default="false"/>
+    <setting id="pyload" type="text" label="URL" enable="eq(-1,true)" default="http://127.0.0.1:8000"/>
+    <setting id="pyload_user" type="text" label="User" enable="eq(-2,true)" default=""/>
+    <setting id="pyload_password" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-3,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="downloadpath" type="text" label="30017" default=""/>
+    <setting id="downloadlistpath" type="text" label="30018" default=""/>
+    <setting id="bookmarkpath" type="text" source="video" option="writeable" label="30030" default=""/>
+    <setting id="librarypath" type="text" label="30067" default=""/>
+    <setting id="subtitulo" type="bool" label="30021" default="false"/>	
+    <setting id="limite_busquedas" type="enum" values="10|20|30|40" label="30024" default="0"/>
+    <setting id="modo_cache" type="enum" lvalues="30039|30040|30041" label="30038" default="0"/>
+    <setting id="cache.dir" type="text" label="30042" default=""/>
+
+    <setting type="sep" />
+    <setting id="personalchannel" type="bool" label="30013" default="false"/>
+    <setting id="personalchannelname" type="text" label="30048"  enable="eq(-1,true)" default="Ejemplo de canal personal"/>
+    <setting id="personalchannellogo" type="text" label="30049" enable="eq(-2,true)" default="http://pelisalacarta.mimediacenter.info/personalchannel/sample.png"/>
+    <setting id="personalchannelurl" type="text" label="30045" enable="eq(-3,true)" default="http://pelisalacarta.mimediacenter.info/personalchannel/samplefeed.rss"/>
+    <setting id="personalchannelpage" type="text" label="30047" enable="eq(-4,true)" default="100"/>
+
+    <setting type="sep" />
+    <setting id="personalchannel2" type="bool" label="30013" default="false"/>
+    <setting id="personalchannelname2" type="text" label="30048"  enable="eq(-1,true)" default="Ejemplo de canal personal"/>
+    <setting id="personalchannellogo2" type="text" label="30049" enable="eq(-2,true)" default="http://pelisalacarta.mimediacenter.info/personalchannel/sample.png"/>
+    <setting id="personalchannelurl2" type="text" label="30045" enable="eq(-3,true)" default="http://pelisalacarta.mimediacenter.info/personalchannel/samplefeed.rss"/>
+    <setting id="personalchannelpage2" type="text" label="30047" enable="eq(-4,true)" default="100"/>
+
+    <setting type="sep" />
+    <setting id="personalchannel3" type="bool" label="30013" default="false"/>
+    <setting id="personalchannelname3" type="text" label="30048"  enable="eq(-1,true)" default="Ejemplo de canal personal"/>
+    <setting id="personalchannellogo3" type="text" label="30049" enable="eq(-2,true)" default="http://pelisalacarta.mimediacenter.info/personalchannel/sample.png"/>
+    <setting id="personalchannelurl3" type="text" label="30045" enable="eq(-3,true)" default="http://pelisalacarta.mimediacenter.info/personalchannel/samplefeed.rss"/>
+    <setting id="personalchannelpage3" type="text" label="30047" enable="eq(-4,true)" default="100"/>
+
+    <setting type="sep" />
+    <setting id="personalchannel4" type="bool" label="30013" default="false"/>
+    <setting id="personalchannelname4" type="text" label="30048"  enable="eq(-1,true)" default="Ejemplo de canal personal"/>
+    <setting id="personalchannellogo4" type="text" label="30049" enable="eq(-2,true)" default="http://pelisalacarta.mimediacenter.info/personalchannel/sample.png"/>
+    <setting id="personalchannelurl4" type="text" label="30045" enable="eq(-3,true)" default="http://pelisalacarta.mimediacenter.info/personalchannel/samplefeed.rss"/>
+    <setting id="personalchannelpage4" type="text" label="30047" enable="eq(-4,true)" default="100"/>
+
+    <setting type="sep" />
+    <setting id="personalchannel5" type="bool" label="30013" default="false"/>
+    <setting id="personalchannelname5" type="text" label="30048"  enable="eq(-1,true)" default="Ejemplo de canal personal"/>
+    <setting id="personalchannellogo5" type="text" label="30049" enable="eq(-2,true)" default="http://pelisalacarta.mimediacenter.info/personalchannel/sample.png"/>
+    <setting id="personalchannelurl5" type="text" label="30045" enable="eq(-3,true)" default="http://pelisalacarta.mimediacenter.info/personalchannel/samplefeed.rss"/>
+    <setting id="personalchannelpage5" type="text" label="30047" enable="eq(-4,true)" default="100"/>
+</settings>

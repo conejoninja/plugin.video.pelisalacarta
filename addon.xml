@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.pelisalacarta"
+    name="pelisalacarta"
+    version="3.2.74"
+    provider-name="tvalacarta">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="es">Películas y series a la carta</summary>
+    <description lang="es">Películas, series, documentales, anime, ... todo lo que puedas encontrar en Internet ahora desde tu media center. Incluye canales en Español, Italiano, Inglés y Rumano.</description>
+    <summary lang="en">Movies and TV Shows on demand</summary>
+    <description lang="en">Movies, Series, Documentaries, Anime, ... everything you can find on Internet now on your media center. Includes channels in Spanish, Italian, English and Romanian.</description>
+    <platform>all</platform>
+  </extension>
+  <extension point="xbmc.service" library="library_service.py" start="login|startup">
+  </extension>
+</addon>

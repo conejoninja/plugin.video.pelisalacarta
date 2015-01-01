@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<version>
+	<name>peliculasyonkis_generico</name>
+	<tag>10</tag>
+	<date>02/01/2013</date>
+	<changes>Arreglado el buscador. Como tienen el mismo código, usa el buscador de seriesyonkis, así solo se ha de mantener uno</changes>
+</version>

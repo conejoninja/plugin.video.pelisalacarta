@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<version>
+	<name>seriesly</name>
+	<tag>31</tag>
+	<date>12/10/2014</date>
+	<changes>Corrige el que no se pueda acceder a algunas webs (gracias a prunk)</changes>
+</version>
