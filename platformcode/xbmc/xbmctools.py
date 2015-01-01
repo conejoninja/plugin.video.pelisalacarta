@@ -322,6 +322,13 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         seleccion = len(video_urls)-1
     elif default_action=="3":
         seleccion = seleccion
+    elif default_action=="4":
+        if len(video_urls)>1:
+            import xbmcgui
+            dia = xbmcgui.Dialog()
+            seleccion = dia.select(config.get_localized_string(30163), opciones)
+        else:
+            seleccion=0
     else:
         seleccion=0
 

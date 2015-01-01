@@ -7,7 +7,7 @@
     <setting id="updatelibrary" type="bool" label="30201" default="true"/>
     <setting id="enableadultmode" type="bool" label="30002" default="false"/>
     <setting id="debug" type="bool" label="30003" default="false"/>
-    <setting id="default_action" type="enum" lvalues="30006|30007|30008|30009" label="30005" default="0"/>
+    <setting id="default_action" type="enum" lvalues="30006|30007|30008|30009|30171" label="30005" default="0"/>
     <setting id="thumbnail_type" type="enum" lvalues="30011|30012|30200" label="30010" default="2"/>
     <setting id="languagefilter" type="enum" lvalues="30025|30026|30027|30028|30029|30046|30016|30023|30036|30037" values="0|1|2|3|4" label="30019" default="0"/>
     <setting id="forceview" type="bool" label ="30043" default="false"/>

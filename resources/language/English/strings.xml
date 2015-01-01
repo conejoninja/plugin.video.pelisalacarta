@@ -21,6 +21,7 @@
     <string id="30007">Watch in low quality</string>
     <string id="30008">Watch in high quality</string>
     <string id="30009">Send to jDownloader</string>
+    <string id="30171">Ask if multiple qualities</string>
 
     <!-- Logo visualization for channels -->
     <string id="30010">Channel icons view:</string>
