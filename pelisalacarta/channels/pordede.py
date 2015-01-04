@@ -490,6 +490,7 @@ def findvideos(item):
 
 def play(item):
     logger.info("pelisalacarta.channels.pordede play url="+item.url)
+    logger.info(item.extra+">========EXTRAAAAAAA")
 
     # Marcar como visto
     checkseen(item.extra.split("|")[1])
@@ -558,5 +559,12 @@ def checkseen(item):
         headers = DEFAULT_HEADERS[:]
         episode = item.split("/")[-1]
         scrapertools.downloadpage("http://www.pordede.com/ajax/action", post="model=episode&id="+episode+"&action=seen&value=1")
+
+    if "/what/peli" in item:
+        data = scrapertools.cache_page(item)
+        # GET MOVIE ID
+        movieid = scrapertools.find_single_match(data,'href="/links/create/ref_id/([0-9]+)/ref_model/')
+        scrapertools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model=peli&id="+movieid+"&action=status&value=3")
+
 
     return True
