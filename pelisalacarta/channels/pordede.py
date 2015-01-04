@@ -148,14 +148,15 @@ def buscar(item):
     logger.info("html="+json_object["html"])
     data = json_object["html"]
 
-    return parse_mixed_results(item,data)
+    return parse_mixed_results(item,data,False)
 
-def parse_mixed_results(item,data):
+def parse_mixed_results(item,data,sort):
     patron  = '<a class="defaultLink extended" href="([^"]+)"[^<]+'
     patron += '<div class="coverMini shadow tiptip" title="([^"]+)"[^<]+'
     patron += '<img class="centeredPic.*?src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
+    itemsort = []
     
     for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
         title = scrapertools.htmlclean(scrapedtitle)
@@ -168,11 +169,22 @@ def parse_mixed_results(item,data):
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/peli/","/links/view/slug/")+"/what/peli"
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+            if sort:
+                itemsort.append({'action': "findvideos", 'title': title, 'extra': referer, 'url': url, 'thumbnail': thumbnail, 'plot': plot, 'fulltitle': title})
+            else:
+                itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
-            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+            if sort:
+                itemsort.append({'action': "episodios", 'title': title, 'extra': referer, 'url': url, 'thumbnail': thumbnail, 'plot': plot, 'fulltitle': title})
+            else:
+                itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+
+    if sort:
+        itemsort = sorted(itemsort, key=lambda k: k['title'])
+        for item in itemsort:
+            itemlist.append( Item(channel=__channel__, action=item['action'] , title=item['title'] , extra=item['extra'] , url=item['url'] , thumbnail=item['thumbnail'] , plot=item['plot'] , fulltitle=item['fulltitle'] , viewmode="movie"))
 
     return itemlist
 
@@ -244,7 +256,7 @@ def episodios(item):
         
         for scrapedurl,numero,scrapedtitle,info,visto in matches:
             visto_string = "[visto] " if visto.strip()=="active" else ""
-            title = visto_string+nombre_temporada+" "+numero+" "+scrapertools.htmlclean(scrapedtitle)
+            title = visto_string+nombre_temporada.replace("Temporada ", "")+"x"+numero+" "+scrapertools.htmlclean(scrapedtitle)
             thumbnail = ""
             plot = ""
             #http://www.pordede.com/peli/the-lego-movie
@@ -314,15 +326,20 @@ def tus_listas(item):
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
+    itemsort = []
     
     for scrapedurl,scrapedtitle in matches:
         title = scrapertools.htmlclean(scrapedtitle)
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = ""
         plot = ""
-        itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
-
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        itemsort.append({'title': title, 'url' : url})
+
+    itemsort = sorted(itemsort, key=lambda k: k['title'])
+
+    for item in itemsort:
+        itemlist.append( Item(channel=__channel__, action="lista" , title=item['title'] , url=item['url']))
 
     return itemlist
 
@@ -341,7 +358,12 @@ def lista(item):
     logger.info("html="+json_object["html"])
     data = json_object["html"]
 
-    return parse_mixed_results(item,data)
+    tmp = parse_mixed_results(item,data,True)
+
+    logger.info("=====TMP=====")
+    logger.info(data)
+    logger.info("=====XxTMP=====")
+    return tmp
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.pordede findvideos")
