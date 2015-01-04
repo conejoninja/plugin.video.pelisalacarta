@@ -70,6 +70,7 @@
     <setting id="pordedeaccount" type="bool" label="pordede" default="false"/>
     <setting id="pordedeuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
     <setting id="pordedepassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+    <setting id="pordedesortlist" type="bool" label="Ordenar listas alfabeticamente" default="true"/>
 
     <setting type="sep" />
     <setting id="quebajamosaccount" type="bool" label="quebajamos" default="false"/>

@@ -334,12 +334,15 @@ def tus_listas(item):
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemsort.append({'title': title, 'url' : url})
+        if (config.get_setting("pordedesortlist")=='true'):
+            itemsort.append({'title': title, 'url' : url})
+        else:
+            itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
 
-    itemsort = sorted(itemsort, key=lambda k: k['title'])
-
-    for item in itemsort:
-        itemlist.append( Item(channel=__channel__, action="lista" , title=item['title'] , url=item['url']))
+    if (config.get_setting("pordedesortlist")=='true'):
+        itemsort = sorted(itemsort, key=lambda k: k['title'])
+        for item in itemsort:
+            itemlist.append( Item(channel=__channel__, action="lista" , title=item['title'] , url=item['url']))
 
     return itemlist
 
@@ -358,7 +361,7 @@ def lista(item):
     logger.info("html="+json_object["html"])
     data = json_object["html"]
 
-    return parse_mixed_results(item,data,True)
+    return parse_mixed_results(item,data,(config.get_setting("pordedesortlist")=='true'))
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.pordede findvideos")
