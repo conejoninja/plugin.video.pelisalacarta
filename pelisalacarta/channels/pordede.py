@@ -490,7 +490,6 @@ def findvideos(item):
 
 def play(item):
     logger.info("pelisalacarta.channels.pordede play url="+item.url)
-    logger.info(item.extra+">========EXTRAAAAAAA")
 
     # Marcar como visto
     checkseen(item.extra.split("|")[1])
