@@ -358,12 +358,7 @@ def lista(item):
     logger.info("html="+json_object["html"])
     data = json_object["html"]
 
-    tmp = parse_mixed_results(item,data,True)
-
-    logger.info("=====TMP=====")
-    logger.info(data)
-    logger.info("=====XxTMP=====")
-    return tmp
+    return parse_mixed_results(item,data,True)
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.pordede findvideos")
