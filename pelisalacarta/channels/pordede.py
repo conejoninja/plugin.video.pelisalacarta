@@ -379,7 +379,7 @@ def findvideos(item):
     sesion = scrapertools.find_single_match(data,'SESS = "([^"]+)";')
     logger.info("sesion="+sesion)
 
-    patron  = '<form method="POST" target="_blank" class="a aporteLink(.*?)</form>'
+    patron  = '<a target="_blank" class="a aporteLink(.*?)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
     
@@ -407,7 +407,7 @@ def findvideos(item):
         logger.info("nombre_servidor="+nombre_servidor)
         
         title = "Ver en "+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
-        url = urlparse.urljoin( item.url , scrapertools.find_single_match(match,'action="([^"]+)"') )
+        url = urlparse.urljoin( item.url , scrapertools.find_single_match(match,'href="([^"]+)"') )
         thumbnail = thumb_servidor
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
