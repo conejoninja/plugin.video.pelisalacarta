@@ -126,7 +126,7 @@ def run():
                 
                 '''
                 if item.subtitle!="":
-                    logger.info("[launcher.py] Downloading subtitle file "+item.subtitle)
+                    logger.info("[launcher.py] Downloading subtitle file "+item.subtitle)
                     from core import downloadtools
                     
                     ficherosubtitulo = os.path.join( config.get_data_path() , "subtitulo.srt" )
@@ -656,4 +656,3 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
 
         if not descargado:
             logger.info("[launcher.py] download_all_episodes, EPISODIO NO DESCARGADO "+episode_title)
-

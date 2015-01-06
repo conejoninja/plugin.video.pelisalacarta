@@ -177,14 +177,14 @@ def parse_mixed_results(item,data,sort):
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
             if sort:
-                itemsort.append({'action': "episodios", 'title': title, 'extra': referer, 'url': url, 'thumbnail': thumbnail, 'plot': plot, 'fulltitle': title})
+                itemsort.append({'action': "episodios", 'title': title, 'extra': referer, 'url': url, 'thumbnail': thumbnail, 'plot': plot, 'fulltitle': title, 'show':title})
             else:
-                itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+                itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
 
     if sort:
         itemsort = sorted(itemsort, key=lambda k: k['title'])
         for item in itemsort:
-            itemlist.append( Item(channel=__channel__, action=item['action'] , title=item['title'] , extra=item['extra'] , url=item['url'] , thumbnail=item['thumbnail'] , plot=item['plot'] , fulltitle=item['fulltitle'] , viewmode="movie"))
+            itemlist.append( Item(channel=__channel__, action=item['action'] , title=item['title'] , extra=item['extra'] , url=item['url'] , thumbnail=item['thumbnail'] , plot=item['plot'] , fulltitle=item['fulltitle'] , show=item['show'] , viewmode="movie"))
 
     return itemlist
 
@@ -222,7 +222,7 @@ def peliculas(item):
             itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
         else:
             url = referer
-            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
@@ -256,7 +256,7 @@ def episodios(item):
         
         for scrapedurl,numero,scrapedtitle,info,visto in matches:
             visto_string = "[visto] " if visto.strip()=="active" else ""
-            title = visto_string+nombre_temporada.replace("Temporada ", "")+"x"+numero+" "+scrapertools.htmlclean(scrapedtitle)
+            title = visto_string+nombre_temporada.replace("Temporada ", "").replace("Extras", "Extras 0")+"x"+numero+" "+scrapertools.htmlclean(scrapedtitle)
             thumbnail = ""
             plot = ""
             #http://www.pordede.com/peli/the-lego-movie
@@ -264,9 +264,14 @@ def episodios(item):
             #http://www.pordede.com/links/viewepisode/id/475011?popup=1
             epid = scrapertools.find_single_match(scrapedurl,"id/(\d+)")
             url = "http://www.pordede.com/links/viewepisode/id/"+epid
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=item.show))
 
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
+    if config.get_platform().startswith("xbmc") or config.get_platform().startswith("boxee"):
+        itemlist.append( Item(channel='pordede', title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios###", show=item.show) )
+        #itemlist.append( Item(channel=item.channel, title="Descargar todos los episodios de la serie", url=item.url, action="download_all_episodes", extra="episodios", show=item.show))
+
 
     return itemlist
 
@@ -467,3 +472,8 @@ def checkseen(item):
 
 
     return True
+
+
+def pdd_dump(obj):
+  for attr in dir(obj):
+    print "obj.%s = %s" % (attr, getattr(obj, attr))
