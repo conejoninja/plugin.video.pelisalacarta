@@ -393,6 +393,12 @@ def findvideos(item):
     
     for match in matches:
         logger.info("match="+match)
+
+        # Descartar enlaces de descarga
+        jdown = scrapertools.find_single_match(match,'<div class="jdownloader">[^<]+</div>')
+        if jdown != '':
+                continue
+
         idioma_1 = scrapertools.find_single_match(match,'<div class="flag([^"]+)">[^<]+</div>')
         logger.info("idioma_1="+idioma_1)
         idioma_2 = scrapertools.find_single_match(match,'<div class="flag[^"]+">([^<]+)</div>')
