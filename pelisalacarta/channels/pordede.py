@@ -415,6 +415,13 @@ def findvideos(item):
         logger.info("nombre_servidor="+nombre_servidor)
         
         title = "Ver en "+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
+        cuenta = []
+        for idx, val in enumerate(['1', '2', 'report']):
+                nn = scrapertools.find_single_match(match,'<span data-num="([^"]+)" class="defaultPopup" href="/likes/popup/value/'+val+'/')
+                if nn != '0':
+                        cuenta.append(nn + ' ' + ['ok', 'ko', 'rep'][idx])
+        if len(cuenta) > 0:
+                title += ' (' + ', '.join(cuenta) + ')'
         url = urlparse.urljoin( item.url , scrapertools.find_single_match(match,'href="([^"]+)"') )
         thumbnail = thumb_servidor
         plot = ""
