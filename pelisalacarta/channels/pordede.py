@@ -402,6 +402,9 @@ def findvideos(item):
     
     for match in matches:
         logger.info("match="+match)
+
+        # Descartar enlaces de descarga
+        jdown = scrapertools.find_single_match(match,'<div class="jdownloader">[^<]+</div>')
         idioma_1 = scrapertools.find_single_match(match,'<div class="flag([^"]+)">[^<]+</div>')
         logger.info("idioma_1="+idioma_1)
         idioma_2 = scrapertools.find_single_match(match,'<div class="flag[^"]+">([^<]+)</div>')
@@ -423,7 +426,7 @@ def findvideos(item):
         nombre_servidor = scrapertools.find_single_match(thumb_servidor,"popup_([^\.]+)\.png")
         logger.info("nombre_servidor="+nombre_servidor)
         
-        title = "Ver en "+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
+        title = ("Download " if jdown != '' else "Ver en ")+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
         cuenta = []
         for idx, val in enumerate(['1', '2', 'report']):
                 nn = scrapertools.find_single_match(match,'<span data-num="([^"]+)" class="defaultPopup" href="/likes/popup/value/'+val+'/')
