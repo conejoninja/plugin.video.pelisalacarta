@@ -409,7 +409,7 @@ def findvideos(item):
         logger.info("calidad_audio="+calidad_audio)
 
 
-        thumb_servidor = scrapertools.find_single_match(match,'<div class="hostimage"[^<]+<img src="([^"]+)">')
+        thumb_servidor = scrapertools.find_single_match(match,'<div class="hostimage"[^<]+<img\s*src="([^"]+)">')
         logger.info("thumb_servidor="+thumb_servidor)
         nombre_servidor = scrapertools.find_single_match(thumb_servidor,"popup_([^\.]+)\.png")
         logger.info("nombre_servidor="+nombre_servidor)
