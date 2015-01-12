@@ -183,8 +183,17 @@ def parse_mixed_results(item,data,sort):
 
     if sort:
         itemsort = sorted(itemsort, key=lambda k: k['title'])
-        for item in itemsort:
-            itemlist.append( Item(channel=__channel__, action=item['action'] , title=item['title'] , extra=item['extra'] , url=item['url'] , thumbnail=item['thumbnail'] , plot=item['plot'] , fulltitle=item['fulltitle'] , show=item['show'] , viewmode="movie"))
+        for subitem in itemsort:
+            show = subitem['title']
+            if subitem.has_key("show"):
+                show = subitem['show']
+            itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , extra=subitem['extra'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , fulltitle=subitem['fulltitle'] , show=show , viewmode="movie"))
+
+    if "offset/" in item.url:
+        old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
+        new_offset = int(old_offset)+30
+        url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
+        itemlist.append( Item(channel=__channel__, action="lista" , title=">> Página siguiente" , extra=item.extra, url=url))
 
     return itemlist
 
@@ -298,7 +307,7 @@ def listas_sigues(item):
     
     for scrapedurl,scrapedtitle in matches:
         title = scrapertools.htmlclean(scrapedtitle)
-        url = urlparse.urljoin(item.url,scrapedurl)
+        url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
         thumbnail = ""
         plot = ""
         itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
@@ -335,7 +344,7 @@ def tus_listas(item):
     
     for scrapedurl,scrapedtitle in matches:
         title = scrapertools.htmlclean(scrapedtitle)
-        url = urlparse.urljoin(item.url,scrapedurl)
+        url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
