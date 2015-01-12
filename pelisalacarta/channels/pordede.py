@@ -405,15 +405,12 @@ def findvideos(item):
 
         # Descartar enlaces de descarga
         jdown = scrapertools.find_single_match(match,'<div class="jdownloader">[^<]+</div>')
-        idioma_1 = scrapertools.find_single_match(match,'<div class="flag([^"]+)">[^<]+</div>')
-        logger.info("idioma_1="+idioma_1)
-        idioma_2 = scrapertools.find_single_match(match,'<div class="flag[^"]+">([^<]+)</div>')
-        logger.info("idioma_2="+idioma_2)
-        idioma_1=idioma_1.replace("&nbsp;","")
-        idioma_2=idioma_2.replace("&nbsp;","")
 
-        idioma = idioma_1.strip()+" "+idioma_2.strip()
-        idioma = idioma.strip()
+        idioma_1 = scrapertools.find_single_match(match,'<div class="flag([^"]+)">([^<]+)</div>')
+        idioma = (idioma_1[0].replace("&nbsp;","").strip() + " " + idioma_1[1].replace("&nbsp;","").strip()).strip()
+        idioma_2 = scrapertools.find_single_match(match,'<div class="flag([^"]+)">([^<]+)</div>', 1)
+        if idioma_2:
+                idioma += ", " + (idioma_2[0].replace("&nbsp;","").strip() + " " + idioma_2[1].replace("&nbsp;","").strip()).strip()
 
         calidad_video = scrapertools.find_single_match(match,'<div class="linkInfo quality"><i class="icon-facetime-video"></i>([^<]+)</div>')
         logger.info("calidad_video="+calidad_video)
@@ -431,7 +428,7 @@ def findvideos(item):
         cuenta = []
         for idx, val in enumerate(['1', '2', 'report']):
             nn = scrapertools.find_single_match(match,'<span\s+data-num="([^"]+)"\s+class="defaultPopup"\s+href="/likes/popup/value/'+val+'/')
-            if nn != '0':
+            if nn != '0' and nn != '':
                 cuenta.append(nn + ' ' + ['ok', 'ko', 'rep'][idx])
 
         if len(cuenta) > 0:
