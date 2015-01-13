@@ -154,12 +154,19 @@ def parse_mixed_results(item,data,sort):
     patron  = '<a class="defaultLink extended" href="([^"]+)"[^<]+'
     patron += '<div class="coverMini shadow tiptip" title="([^"]+)"[^<]+'
     patron += '<img class="centeredPic.*?src="([^"]+)"'
+    patron += '[^<]+<img[^<]+<div class="extra-info">'
+    patron += '<span class="year">([^<]+)</span>'
+    patron += '<span class="value"><i class="icon-star"></i>([^<]+)</span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
     itemsort = []
     
-    for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
+    for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedyear,scrapedvalue in matches:
         title = scrapertools.htmlclean(scrapedtitle)
+        if scrapedyear != '':
+            title += " ("+scrapedyear+")"
+        if scrapedvalue != '':
+            title += " ("+scrapedvalue+")"
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
         #http://www.pordede.com/peli/the-lego-movie
@@ -215,11 +222,18 @@ def peliculas(item):
     patron  = '<a class="defaultLink extended" href="([^"]+)"[^<]+'
     patron += '<div class="coverMini shadow tiptip" title="([^"]+)"[^<]+'
     patron += '<img class="centeredPic.*?src="([^"]+)"'
+    patron += '[^<]+<img[^<]+<div class="extra-info">'
+    patron += '<span class="year">([^<]+)</span>'
+    patron += '<span class="value"><i class="icon-star"></i>([^<]+)</span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
     
-    for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
+    for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedyear,scrapedvalue in matches:
         title = scrapertools.htmlclean(scrapedtitle)
+        if scrapedyear != '':
+            title += " ("+scrapedyear+")"
+        if scrapedvalue != '':
+            title += " ("+scrapedvalue+")"
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
         #http://www.pordede.com/peli/the-lego-movie
