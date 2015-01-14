@@ -64,6 +64,7 @@ def menuseries(item):
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/series/loadmedia/offset/0/showlist/hot" ))
     itemlist.append( Item(channel=__channel__, action="generos"   , title="Por géneros"          , url="http://www.pordede.com/series" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Siguiendo"            , url="http://www.pordede.com/series/following" ))
+    itemlist.append( Item(channel=__channel__, action="siguientes" , title="Siguientes Cap." , url="http://www.pordede.com" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Favoritas"            , url="http://www.pordede.com/series/favorite" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Pendientes"           , url="http://www.pordede.com/series/pending" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Terminadas"           , url="http://www.pordede.com/series/seen" ))
@@ -197,6 +198,97 @@ def parse_mixed_results(item,data,sort):
 
     return itemlist
 
+def siguientes(item):
+    logger.info("pelisalacarta.channels.pordede siguientes")
+
+    # Descarga la pagina
+    headers = DEFAULT_HEADERS[:]
+    headers.append(["Referer",item.extra])
+    headers.append(["X-Requested-With","XMLHttpRequest"])
+    data = scrapertools.cache_page(item.url,headers=headers)
+    logger.info("data="+data)
+
+    # Extrae las entradas (carpetas)  
+    json_object = jsontools.load_json(data)
+    logger.info("html2="+json_object["html"])
+    data = json_object["html"]
+    patron = ''
+    patron += '<div class="coverMini shadow tiptip" title="([^"]+)">[^<]+'
+    patron += '<img class="centeredPic centeredPicFalse"  onerror="[^"]+"  src="([^"]+)"[^<]+'
+    patron += '<img src="/images/loading-mini.gif" class="loader"/>[^<]+'
+    patron += '<div class="extra-info"><span class="year">[^<]+'
+    patron += '</span><span class="value"><i class="icon-star"></i>[^<]+'
+    patron += '</span></div>[^<]+'
+    patron += '</div>[^<]+'
+    patron += '</a>[^<]+'
+    patron += '<a class="userepiinfo defaultLink" href="([^"]+)">(\d+)x(\d+)'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    itemlist = []
+    
+    #for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
+    for scrapedtitle,scrapedthumbnail,scrapedurl,scrapedsession,scrapedepisode in matches:
+        title = scrapertools.htmlclean(scrapedtitle)
+        session = scrapertools.htmlclean(scrapedsession)
+        episode = scrapertools.htmlclean(scrapedepisode)
+        thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
+        plot = ""
+        title = session + "x" + episode + " - " + title
+        #http://www.pordede.com/peli/the-lego-movie
+        #http://www.pordede.com/links/view/slug/the-lego-movie/what/peli?popup=1
+
+        referer = urlparse.urljoin(item.url,scrapedurl)
+        url = referer
+        #itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
+        itemlist.append( Item(channel=__channel__, action="episodio" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie", extra=session+"|"+episode))
+
+        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
+    #http://www.pordede.com/pelis/loadmedia/offset/30/showlist/hot?popup=1
+    if "offset" in item.url:
+        old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
+        new_offset = int(old_offset)+30
+        url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
+        itemlist.append( Item(channel=__channel__, action="peliculas" , title=">> Página siguiente" , extra=item.extra, url=url))
+
+    return itemlist
+def episodio(item):
+    logger.info("pelisalacarta.channels.pordede episodio")
+    itemlist = []
+
+    # Descarga la pagina
+    data = scrapertools.cache_page(item.url)
+    logger.info("data="+data)
+
+    session = str(int(item.extra.split("|")[0]))
+    episode = str(int(item.extra.split("|")[1]))
+    patrontemporada = '<div class="checkSeason"[^>]+>Temporada '+session+'<div class="right" onclick="controller.checkSeason(.*?)\s+</div></div>'
+    matchestemporadas = re.compile(patrontemporada,re.DOTALL).findall(data)
+
+    for bloque_episodios in matchestemporadas:
+        logger.info("bloque_episodios="+bloque_episodios)
+
+        # Extrae los episodios
+        patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">'+episode+' </span>([^<]+)</span>(\s*</div>\s*<span[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></span><div[^>]*><button[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></button><div class="action([^"]*)" data-action="seen">)?'
+        matches = re.compile(patron,re.DOTALL).findall(bloque_episodios)
+        
+        for scrapedurl,scrapedtitle,info,visto in matches:
+            visto_string = "[visto] " if visto.strip()=="active" else ""
+            numero=episode
+            title = visto_string+session+"x"+numero+" "+scrapertools.htmlclean(scrapedtitle)
+            thumbnail = ""
+            plot = ""
+            #http://www.pordede.com/peli/the-lego-movie
+            #http://www.pordede.com/links/view/slug/the-lego-movie/what/peli?popup=1
+            #http://www.pordede.com/links/viewepisode/id/475011?popup=1
+            epid = scrapertools.find_single_match(scrapedurl,"id/(\d+)")
+            url = "http://www.pordede.com/links/viewepisode/id/"+epid
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=item.show))
+            if (DEBUG): logger.info("Abrimos title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
+    itemlist2 = []
+    for capitulo in itemlist:
+        itemlist2 = findvideos(capitulo)
+    return itemlist2
 def peliculas(item):
     logger.info("pelisalacarta.channels.pordede peliculas")
 
