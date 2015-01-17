@@ -505,6 +505,10 @@ def findvideos(item):
     patron  = '<a target="_blank" class="a aporteLink(.*?)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
+
+    if "/what/peli" in item.url:
+        url_aux = item.url.replace("/links/view/slug/", "/peli/").replace("/what/peli", "")
+        itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=url_aux, thumbnail=item.thumbnail,  folder=False ))
     
     for match in matches:
         logger.info("match="+match)
@@ -597,3 +601,61 @@ def checkseen(item):
 
 
     return True
+
+def infosinopsis(item):
+    logger.info("pelisalacarta.channels.pordede infosinopsis")
+
+    # Descarga la pagina
+    headers = DEFAULT_HEADERS[:]
+    #headers.append(["Referer",item.extra])
+    #headers.append(["X-Requested-With","XMLHttpRequest"])
+    data = scrapertools.cache_page(item.url,headers=headers)
+    #logger.info("data="+data)
+
+    scrapedtitle = scrapertools.find_single_match(data,'<h1>([^<]+)</h1>')
+    scrapedvalue = scrapertools.find_single_match(data,'<span class="puntuationValue" data-value="([^"]+)"')
+    scrapedyear = scrapertools.find_single_match(data,'<h2 class="info">[^<]+</h2>\s*<p class="info">([^<]+)</p>')
+    scrapedduration = scrapertools.find_single_match(data,'<h2 class="info">[^<]+</h2>\s*<p class="info">([^<]+)</p>', 1)
+    scrapedplot = scrapertools.find_single_match(data,'<div class="info text"[^>]+>([^<]+)</div>')
+    #scrapedthumbnail = scrapertools.find_single_match(data,'<meta property="og:image" content="([^"]+)"')
+    #thumbnail = scrapedthumbnail.replace("http://www.pordede.comhttp://", "http://").replace("mediacover", "mediathumb")
+    scrapedgenres = re.compile('href="/pelis/index/genre/[^"]+">([^<]+)</a>',re.DOTALL).findall(data)
+    genres = ', '.join(scrapedgenres)
+
+    title = scrapertools.htmlclean(scrapedtitle)
+    plot = "Año: [B]"+scrapedyear+"[/B]"
+    plot += " , Duración: [B]"+scrapedduration+"[/B]"
+    plot += " , Puntuación usuarios: [B]"+scrapedvalue+"[/B]"
+    plot += "\nGéneros: "+genres
+    plot += "\n\n"+scrapertools.htmlclean(scrapedplot)
+
+    tbd = TextBox("DialogTextViewer.xml", os.getcwd(), "Default")
+    tbd.ask(title, plot)
+    del tbd
+    return
+
+import xbmcgui
+class TextBox( xbmcgui.WindowXML ):
+    """ Create a skinned textbox window """
+    def __init__( self, *args, **kwargs):
+        pass
+        
+    def onInit( self ):
+        try:
+            self.getControl( 5 ).setText( self.text )
+            self.getControl( 1 ).setLabel( self.title )
+        except: pass
+
+    def onClick( self, controlId ):
+        pass
+
+    def onFocus( self, controlId ):
+        pass
+
+    def onAction( self, action ):
+        self.close()
+
+    def ask(self, title, text ):
+        self.title = title
+        self.text = text
+        self.doModal()
