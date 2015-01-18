@@ -620,14 +620,17 @@ def infosinopsis(item):
     #scrapedthumbnail = scrapertools.find_single_match(data,'<meta property="og:image" content="([^"]+)"')
     #thumbnail = scrapedthumbnail.replace("http://www.pordede.comhttp://", "http://").replace("mediacover", "mediathumb")
     scrapedgenres = re.compile('href="/pelis/index/genre/[^"]+">([^<]+)</a>',re.DOTALL).findall(data)
-    genres = ', '.join(scrapedgenres)
+    scrapedcasting = re.compile('href="/star/[^"]+">([^<]+)</a><br/><span>([^<]+)</span>',re.DOTALL).findall(data)
 
     title = scrapertools.htmlclean(scrapedtitle)
     plot = "Año: [B]"+scrapedyear+"[/B]"
     plot += " , Duración: [B]"+scrapedduration+"[/B]"
     plot += " , Puntuación usuarios: [B]"+scrapedvalue+"[/B]"
-    plot += "\nGéneros: "+genres
-    plot += "\n\n"+scrapertools.htmlclean(scrapedplot)
+    plot += "\nGéneros: "+", ".join(scrapedgenres)
+    plot += "\n\nSinopsis:\n"+scrapertools.htmlclean(scrapedplot)
+    plot += "\n\nCasting:\n"
+    for actor,papel in scrapedcasting:
+    	plot += actor+" ("+papel+"). "
 
     tbd = TextBox("DialogTextViewer.xml", os.getcwd(), "Default")
     tbd.ask(title, plot)
