@@ -82,6 +82,7 @@
     <setting id="pordedeuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
     <setting id="pordedepassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
     <setting id="pordedesortlist" type="bool" label="Ordenar listas alfabeticamente" default="false"/>
+    <setting id="pordedesortlinks" type="bool" label="Ordenar enlaces por valoración" default="false"/>
 
     <setting type="sep" />
     <setting id="quebajamosaccount" type="bool" label="quebajamos" default="false"/>
