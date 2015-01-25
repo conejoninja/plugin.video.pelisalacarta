@@ -509,7 +509,10 @@ def findvideos(item):
     if "/what/peli" in item.url:
         url_aux = item.url.replace("/links/view/slug/", "/peli/").replace("/what/peli", "")
         itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=url_aux, thumbnail=item.thumbnail,  folder=False ))
-    
+
+    itemsort = []
+    sortvideos = True #if len(matches) < 200 else False
+
     for match in matches:
         logger.info("match="+match)
 
@@ -536,10 +539,14 @@ def findvideos(item):
         title = ("Download " if jdown != '' else "Ver en ")+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
 
         cuenta = []
+        valoracion = 0
         for idx, val in enumerate(['1', '2', 'report']):
             nn = scrapertools.find_single_match(match,'<span\s+data-num="([^"]+)"\s+class="defaultPopup"\s+href="/likes/popup/value/'+val+'/')
             if nn != '0' and nn != '':
                 cuenta.append(nn + ' ' + ['ok', 'ko', 'rep'][idx])
+                valoracion += int(nn) if val == '1' else -int(nn)
+        if jdown != '': # para dejar los "downloads" detras de los "ver" al ordenar
+            valoracion += -1000
 
         if len(cuenta) > 0:
             title += ' (' + ', '.join(cuenta) + ')'
@@ -548,7 +555,15 @@ def findvideos(item):
         thumbnail = thumb_servidor
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
+        if sortvideos:
+            itemsort.append({'action': "play", 'title': title, 'url':url, 'thumbnail':thumbnail, 'plot':plot, 'extra':sesion+"|"+item.url, 'fulltitle':title, 'valoracion':valoracion})
+        else:
+            itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
+
+    if sortvideos:
+        itemsort = sorted(itemsort, key=lambda k: k['valoracion'], reverse=True)
+        for subitem in itemsort:
+            itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
 
     return itemlist
 
