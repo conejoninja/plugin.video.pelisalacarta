@@ -511,7 +511,12 @@ def findvideos(item):
         itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=url_aux, thumbnail=item.thumbnail,  folder=False ))
 
     itemsort = []
-    sortvideos = True #if len(matches) < 200 else False
+    sortvideos = False
+
+    if len(matches) < 200:
+        if (config.get_setting("pordedesortlinks")=='true'):
+            sortvideos = True
+            
 
     for match in matches:
         logger.info("match="+match)
