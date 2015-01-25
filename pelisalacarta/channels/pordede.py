@@ -565,7 +565,8 @@ def play(item):
 
     data = scrapertools.cache_page(item.url,post="_s="+item.extra.split("|")[0],headers=headers)
     logger.info("data="+data)
-    url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
+    #url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
+    url = scrapertools.find_single_match(data,'<p class="links">\s+<a href="([^"]+)" target="_blank"')
     url = urlparse.urljoin(item.url,url)
 
     headers = DEFAULT_HEADERS[:]
