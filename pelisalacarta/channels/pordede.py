@@ -710,8 +710,8 @@ class TextBox( xbmcgui.WindowXML ):
 # Valoraciones de enlaces, los valores más altos se mostrarán primero :
 
 def valora_calidad(video, audio):
-    prefs_video = [ 'hdmicro', 'hd1080', 'hd720', 'hdrip', 'dvrip', 'rip' ]
-    prefs_audio = [ '5.1', 'rip', 'line', 'screener' ]
+    prefs_video = [ 'hdmicro', 'hd1080', 'hd720', 'hdrip', 'dvdrip', 'rip', 'tc-screener', 'ts-screener' ]
+    prefs_audio = [ 'dts', '5.1', 'rip', 'line', 'screener' ]
 
     video = ''.join(video.split()).lower()
     pts = (9 - prefs_video.index(video) if video in prefs_video else 1) * 10
