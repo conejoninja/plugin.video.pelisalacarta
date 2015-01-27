@@ -483,8 +483,14 @@ def lista(item):
 
     return parse_mixed_results(item,data,(config.get_setting("pordedesortlist")=='true'))
 
-def findvideos(item):
+def findvideos(item, verTodos=False):
     logger.info("pelisalacarta.channels.pordede findvideos")
+    item2 = item
+    if verTodos:
+        numberlinks=0
+    else:
+        numberlinks = config.get_setting("pordedenumberlinks")
+        numberlinks = int(numberlinks) if numberlinks != '' else 10
 
     # Descarga la pagina
     headers = DEFAULT_HEADERS[:]
@@ -505,18 +511,32 @@ def findvideos(item):
     patron  = '<a target="_blank" class="a aporteLink(.*?)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    
+
+    if "/what/peli" in item.url:
+        url_aux = item.url.replace("/links/view/slug/", "/peli/").replace("/what/peli", "")
+        itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=url_aux, thumbnail=item.thumbnail,  folder=False ))
+
+    itemsort = []
+    sortlinks = config.get_setting("pordedesortlinks") # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
+    sortlinks = int(sortlinks) if sortlinks != '' else 0
+    showlinks = config.get_setting("pordedeshowlinks") # 0:todos, 1:ver online, 2:descargar
+    showlinks = int(showlinks) if showlinks != '' else 0
+
     for match in matches:
         logger.info("match="+match)
 
-        # Descartar enlaces de descarga
         jdown = scrapertools.find_single_match(match,'<div class="jdownloader">[^<]+</div>')
+        if (showlinks == 1 and jdown != '') or (showlinks == 2 and jdown == ''): # Descartar enlaces veronline/descargar
+            continue
 
-        idioma_1 = scrapertools.find_single_match(match,'<div class="flag([^"]+)">([^<]+)</div>')
-        idioma = (idioma_1[0].replace("&nbsp;","").strip() + " " + idioma_1[1].replace("&nbsp;","").strip()).strip()
-        idioma_2 = scrapertools.find_single_match(match,'<div class="flag([^"]+)">([^<]+)</div>', 1)
-        if idioma_2:
-                idioma += ", " + (idioma_2[0].replace("&nbsp;","").strip() + " " + idioma_2[1].replace("&nbsp;","").strip()).strip()
+        idiomas = re.compile('<div class="flag([^"]+)">([^<]+)</div>',re.DOTALL).findall(match)
+        idioma_0 = (idiomas[0][0].replace("&nbsp;","").strip() + " " + idiomas[0][1].replace("&nbsp;","").strip()).strip()
+        if len(idiomas) > 1:
+            idioma_1 = (idiomas[1][0].replace("&nbsp;","").strip() + " " + idiomas[1][1].replace("&nbsp;","").strip()).strip()
+            idioma = idioma_0 + ", " + idioma_1
+        else:
+            idioma_1 = ''
+            idioma = idioma_0
 
         calidad_video = scrapertools.find_single_match(match,'<div class="linkInfo quality"><i class="icon-facetime-video"></i>([^<]+)</div>')
         logger.info("calidad_video="+calidad_video)
@@ -532,10 +552,12 @@ def findvideos(item):
         title = ("Download " if jdown != '' else "Ver en ")+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
 
         cuenta = []
+        valoracion = 0
         for idx, val in enumerate(['1', '2', 'report']):
             nn = scrapertools.find_single_match(match,'<span\s+data-num="([^"]+)"\s+class="defaultPopup"\s+href="/likes/popup/value/'+val+'/')
             if nn != '0' and nn != '':
                 cuenta.append(nn + ' ' + ['ok', 'ko', 'rep'][idx])
+                valoracion += int(nn) if val == '1' else -int(nn)
 
         if len(cuenta) > 0:
             title += ' (' + ', '.join(cuenta) + ')'
@@ -544,10 +566,40 @@ def findvideos(item):
         thumbnail = thumb_servidor
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
+        if sortlinks > 0:
+            # orden1 para dejar los "downloads" detras de los "ver" al ordenar
+            # orden2 segun configuración
+            if sortlinks == 1:
+                orden = valoracion
+            elif sortlinks == 2:
+                orden = valora_idioma(idioma_0, idioma_1)
+            elif sortlinks == 3:
+                orden = valora_calidad(calidad_video, calidad_audio)
+            elif sortlinks == 4:
+                orden = (valora_idioma(idioma_0, idioma_1) * 100) + valora_calidad(calidad_video, calidad_audio)
+            elif sortlinks == 5:
+                orden = (valora_idioma(idioma_0, idioma_1) * 1000) + valoracion
+            elif sortlinks == 6:
+                orden = (valora_idioma(idioma_0, idioma_1) * 100000) + (valora_calidad(calidad_video, calidad_audio) * 1000) + valoracion
+            itemsort.append({'action': "play", 'title': title, 'url':url, 'thumbnail':thumbnail, 'plot':plot, 'extra':sesion+"|"+item.url, 'fulltitle':title, 'orden1': (jdown == ''), 'orden2':orden})
+        else:
+            itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
+
+    if sortlinks > 0:
+        itemsort = sorted(itemsort, key=lambda k: (k['orden1'], k['orden2']), reverse=True)
+        for subitem in itemsort:
+            if numberlinks==0 or len(itemlist)<=numberlinks:
+                itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
+        if numberlinks >0:
+            itemlist.append( Item(channel=__channel__, action="findallvideos" , title="Ver todos los enlaces" , extra=item2.extra, url=item2.url, thumbnail=item2.thumbnail, plot=item2.plot, fulltitle=item2.fulltitle, viewmode=item2.viewmode))
 
     return itemlist
 
+def findallvideos(item):
+    itemlist = []
+    item2 = Item(channel=__channel__, action="findvideos" , title=item.title , extra=item.extra+"JRR", url=item.url, thumbnail=item.thumbnail, plot=item.plot, fulltitle=item.fulltitle, viewmode=item.viewmode)	
+    itemlist.extend( findvideos(item2,True) )
+    return itemlist
 
 def play(item):
     logger.info("pelisalacarta.channels.pordede play url="+item.url)
@@ -561,7 +613,8 @@ def play(item):
 
     data = scrapertools.cache_page(item.url,post="_s="+item.extra.split("|")[0],headers=headers)
     logger.info("data="+data)
-    url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
+    #url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
+    url = scrapertools.find_single_match(data,'<p class="links">\s+<a href="([^"]+)" target="_blank"')
     url = urlparse.urljoin(item.url,url)
 
     headers = DEFAULT_HEADERS[:]
@@ -597,3 +650,89 @@ def checkseen(item):
 
 
     return True
+
+def infosinopsis(item):
+    logger.info("pelisalacarta.channels.pordede infosinopsis")
+
+    # Descarga la pagina
+    headers = DEFAULT_HEADERS[:]
+    #headers.append(["Referer",item.extra])
+    #headers.append(["X-Requested-With","XMLHttpRequest"])
+    data = scrapertools.cache_page(item.url,headers=headers)
+    #logger.info("data="+data)
+
+    scrapedtitle = scrapertools.find_single_match(data,'<h1>([^<]+)</h1>')
+    scrapedvalue = scrapertools.find_single_match(data,'<span class="puntuationValue" data-value="([^"]+)"')
+    scrapedyear = scrapertools.find_single_match(data,'<h2 class="info">[^<]+</h2>\s*<p class="info">([^<]+)</p>')
+    scrapedduration = scrapertools.find_single_match(data,'<h2 class="info">[^<]+</h2>\s*<p class="info">([^<]+)</p>', 1)
+    scrapedplot = scrapertools.find_single_match(data,'<div class="info text"[^>]+>([^<]+)</div>')
+    #scrapedthumbnail = scrapertools.find_single_match(data,'<meta property="og:image" content="([^"]+)"')
+    #thumbnail = scrapedthumbnail.replace("http://www.pordede.comhttp://", "http://").replace("mediacover", "mediathumb")
+    scrapedgenres = re.compile('href="/pelis/index/genre/[^"]+">([^<]+)</a>',re.DOTALL).findall(data)
+    scrapedcasting = re.compile('href="/star/[^"]+">([^<]+)</a><br/><span>([^<]+)</span>',re.DOTALL).findall(data)
+
+    title = scrapertools.htmlclean(scrapedtitle)
+    plot = "Año: [B]"+scrapedyear+"[/B]"
+    plot += " , Duración: [B]"+scrapedduration+"[/B]"
+    plot += " , Puntuación usuarios: [B]"+scrapedvalue+"[/B]"
+    plot += "\nGéneros: "+", ".join(scrapedgenres)
+    plot += "\n\nSinopsis:\n"+scrapertools.htmlclean(scrapedplot)
+    plot += "\n\nCasting:\n"
+    for actor,papel in scrapedcasting:
+    	plot += actor+" ("+papel+"). "
+
+    tbd = TextBox("DialogTextViewer.xml", os.getcwd(), "Default")
+    tbd.ask(title, plot)
+    del tbd
+    return
+
+import xbmcgui
+class TextBox( xbmcgui.WindowXML ):
+    """ Create a skinned textbox window """
+    def __init__( self, *args, **kwargs):
+        pass
+        
+    def onInit( self ):
+        try:
+            self.getControl( 5 ).setText( self.text )
+            self.getControl( 1 ).setLabel( self.title )
+        except: pass
+
+    def onClick( self, controlId ):
+        pass
+
+    def onFocus( self, controlId ):
+        pass
+
+    def onAction( self, action ):
+        self.close()
+
+    def ask(self, title, text ):
+        self.title = title
+        self.text = text
+        self.doModal()
+
+# Valoraciones de enlaces, los valores más altos se mostrarán primero :
+
+def valora_calidad(video, audio):
+    prefs_video = [ 'hdmicro', 'hd1080', 'hd720', 'hdrip', 'dvrip', 'rip' ]
+    prefs_audio = [ '5.1', 'rip', 'line', 'screener' ]
+
+    video = ''.join(video.split()).lower()
+    pts = (9 - prefs_video.index(video) if video in prefs_video else 1) * 10
+
+    audio = ''.join(audio.split()).lower()
+    pts += 9 - prefs_audio.index(audio) if audio in prefs_audio else 1
+
+    return pts
+
+def valora_idioma(idioma_0, idioma_1):
+    prefs = [ 'spanish', 'spanish LAT', 'catalan', 'english', 'french' ]
+
+    pts = (9 - prefs.index(idioma_0) if idioma_0 in prefs else 1) * 10
+    if idioma_1 != '': # si hay subtítulos
+        idioma_1 = idioma_1.replace(' SUB', '')
+        pts += 8 - prefs.index(idioma_1) if idioma_1 in prefs else 1
+    else:
+        pts += 9 # sin subtítulos por delante
+    return pts
