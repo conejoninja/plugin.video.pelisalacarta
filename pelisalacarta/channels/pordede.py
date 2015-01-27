@@ -485,12 +485,6 @@ def lista(item):
 
 def findvideos(item, verTodos=False):
     logger.info("pelisalacarta.channels.pordede findvideos")
-    item2 = item
-    if verTodos:
-        numberlinks=0
-    else:
-        numberlinks = config.get_setting("pordedenumberlinks")
-        numberlinks = int(numberlinks) if numberlinks != '' else 10
 
     # Descarga la pagina
     headers = DEFAULT_HEADERS[:]
@@ -586,20 +580,21 @@ def findvideos(item, verTodos=False):
             itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
 
     if sortlinks > 0:
+        numberlinks = config.get_setting("pordedenumberlinks") # 0:todos, > 0:n
+        numberlinks = int(numberlinks) if numberlinks != '' else 0
+        if numberlinks == 0:
+            verTodos = True
         itemsort = sorted(itemsort, key=lambda k: (k['orden1'], k['orden2']), reverse=True)
-        for subitem in itemsort:
-            if numberlinks==0 or len(itemlist)<=numberlinks:
-                itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
-        if numberlinks >0:
-            itemlist.append( Item(channel=__channel__, action="findallvideos" , title="Ver todos los enlaces" , extra=item2.extra, url=item2.url, thumbnail=item2.thumbnail, plot=item2.plot, fulltitle=item2.fulltitle, viewmode=item2.viewmode))
+        for i, subitem in enumerate(itemsort):
+            if verTodos == False and i >= numberlinks:
+                itemlist.append(Item(channel=__channel__, action='findallvideos' , title='Ver todos los enlaces', url=item.url, extra=item.extra ))
+                break
+            itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
 
     return itemlist
 
 def findallvideos(item):
-    itemlist = []
-    item2 = Item(channel=__channel__, action="findvideos" , title=item.title , extra=item.extra+"JRR", url=item.url, thumbnail=item.thumbnail, plot=item.plot, fulltitle=item.fulltitle, viewmode=item.viewmode)	
-    itemlist.extend( findvideos(item2,True) )
-    return itemlist
+    return findvideos(item, True)
 
 def play(item):
     logger.info("pelisalacarta.channels.pordede play url="+item.url)
