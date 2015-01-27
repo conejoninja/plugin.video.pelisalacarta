@@ -483,7 +483,7 @@ def lista(item):
 
     return parse_mixed_results(item,data,(config.get_setting("pordedesortlist")=='true'))
 
-def findvideos(item):
+def findvideos(item, verTodos=False):
     logger.info("pelisalacarta.channels.pordede findvideos")
 
     # Descarga la pagina
@@ -580,12 +580,21 @@ def findvideos(item):
             itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
 
     if sortlinks > 0:
+        numberlinks = config.get_setting("pordedenumberlinks") # 0:todos, > 0:n*5 (5,10,15,20,...)
+        numberlinks = int(numberlinks) * 5 if numberlinks != '' else 0
+        if numberlinks == 0:
+            verTodos = True
         itemsort = sorted(itemsort, key=lambda k: (k['orden1'], k['orden2']), reverse=True)
-        for subitem in itemsort:
+        for i, subitem in enumerate(itemsort):
+            if verTodos == False and i >= numberlinks:
+                itemlist.append(Item(channel=__channel__, action='findallvideos' , title='Ver todos los enlaces', url=item.url, extra=item.extra ))
+                break
             itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
 
     return itemlist
 
+def findallvideos(item):
+    return findvideos(item,True)
 
 def play(item):
     logger.info("pelisalacarta.channels.pordede play url="+item.url)
