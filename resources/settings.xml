@@ -84,6 +84,7 @@
     <setting id="pordedesortlist" type="bool" label="Ordenar listas alfabéticamente" default="false" enable="eq(-3,true)"/>
     <setting id="pordedesortlinks" type="enum" values="No|por Valoración|por Idioma|por Calidad|por Idioma y Calidad|por Idioma y Valoración|por Idioma, Calidad y Valoración" label="Ordenar enlaces" default="0" enable="eq(-4,true)"/>
     <setting id="pordedeshowlinks" type="enum" values="Todos|Ver online|Descargar" label="Mostrar enlaces" default="0" enable="eq(-5,true)"/>
+    <setting id="pordedenumberlinks" type="enum" values="No|5|10|15|20|25|30" label="Limitar número de enlaces" default="0" enable="eq(-6,true)"/>
 
     <setting type="sep" />
     <setting id="quebajamosaccount" type="bool" label="quebajamos" default="false"/>
