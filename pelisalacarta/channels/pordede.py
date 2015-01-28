@@ -149,9 +149,9 @@ def buscar(item):
     logger.info("html="+json_object["html"])
     data = json_object["html"]
 
-    return parse_mixed_results(item,data,False)
+    return parse_mixed_results(item,data)
 
-def parse_mixed_results(item,data,sort):
+def parse_mixed_results(item,data):
     patron  = '<a class="defaultLink extended" href="([^"]+)"[^<]+'
     patron += '<div class="coverMini shadow tiptip" title="([^"]+)"[^<]+'
     patron += '<img class="centeredPic.*?src="([^"]+)"'
@@ -160,8 +160,7 @@ def parse_mixed_results(item,data,sort):
     patron += '<span class="value"><i class="icon-star"></i>([^<]+)</span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    itemsort = []
-    
+
     for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedyear,scrapedvalue in matches:
         title = scrapertools.htmlclean(scrapedtitle)
         if scrapedyear != '':
@@ -177,31 +176,26 @@ def parse_mixed_results(item,data,sort):
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/peli/","/links/view/slug/")+"/what/peli"
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            if sort:
-                itemsort.append({'action': "findvideos", 'title': title, 'extra': referer, 'url': url, 'thumbnail': thumbnail, 'plot': plot, 'fulltitle': title})
-            else:
-                itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie", year=scrapedyear, rating=scrapedvalue))
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
-            if sort:
-                itemsort.append({'action': "episodios", 'title': title, 'extra': referer, 'url': url, 'thumbnail': thumbnail, 'plot': plot, 'fulltitle': title, 'show':title})
-            else:
-                itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
-
-    if sort:
-        itemsort = sorted(itemsort, key=lambda k: k['title'])
-        for subitem in itemsort:
-            show = subitem['title']
-            if subitem.has_key("show"):
-                show = subitem['show']
-            itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , extra=subitem['extra'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , fulltitle=subitem['fulltitle'] , show=show , viewmode="movie"))
+            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie", year=scrapedyear, rating=scrapedvalue))
 
     if "offset/" in item.url:
         old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
         new_offset = int(old_offset)+30
         url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
         itemlist.append( Item(channel=__channel__, action="lista" , title=">> Página siguiente" , extra=item.extra, url=url))
+
+    try:
+        import xbmcplugin
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RATING)
+    except:
+        pass
 
     return itemlist
 
@@ -258,6 +252,7 @@ def siguientes(item):
         itemlist.append( Item(channel=__channel__, action="peliculas" , title=">> Página siguiente" , extra=item.extra, url=url))
 
     return itemlist
+
 def episodio(item):
     logger.info("pelisalacarta.channels.pordede episodio")
     itemlist = []
@@ -296,6 +291,7 @@ def episodio(item):
     for capitulo in itemlist:
         itemlist2 = findvideos(capitulo)
     return itemlist2
+
 def peliculas(item):
     logger.info("pelisalacarta.channels.pordede peliculas")
 
@@ -311,44 +307,7 @@ def peliculas(item):
     logger.info("html="+json_object["html"])
     data = json_object["html"]
 
-    patron  = '<a class="defaultLink extended" href="([^"]+)"[^<]+'
-    patron += '<div class="coverMini shadow tiptip" title="([^"]+)"[^<]+'
-    patron += '<img class="centeredPic.*?src="([^"]+)"'
-    patron += '[^<]+<img[^<]+<div class="extra-info">'
-    patron += '<span class="year">([^<]+)</span>'
-    patron += '<span class="value"><i class="icon-star"></i>([^<]+)</span>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    itemlist = []
-    
-    for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedyear,scrapedvalue in matches:
-        title = scrapertools.htmlclean(scrapedtitle)
-        if scrapedyear != '':
-            title += " ("+scrapedyear+")"
-        if scrapedvalue != '':
-            title += " ("+scrapedvalue+")"
-        thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
-        plot = ""
-        #http://www.pordede.com/peli/the-lego-movie
-        #http://www.pordede.com/links/view/slug/the-lego-movie/what/peli?popup=1
-
-        referer = urlparse.urljoin(item.url,scrapedurl)
-        if "/peli" in item.url:
-            url = referer.replace("/peli/","/links/view/slug/")+"/what/peli"
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
-        else:
-            url = referer
-            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
-
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-
-    #http://www.pordede.com/pelis/loadmedia/offset/30/showlist/hot?popup=1
-    if "offset" in item.url:
-        old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
-        new_offset = int(old_offset)+30
-        url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=">> Página siguiente" , extra=item.extra, url=url))
-
-    return itemlist
+    return parse_mixed_results(item,data)
 
 def episodios(item):
     logger.info("pelisalacarta.channels.pordede episodios")
@@ -420,6 +379,15 @@ def listas_sigues(item):
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
+    try:
+        import xbmcplugin
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
+        #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+        #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RATING)
+    except:
+        pass
+
     return itemlist
 
 def tus_listas(item):
@@ -446,23 +414,23 @@ def tus_listas(item):
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    itemsort = []
-    
+
     for scrapedurl,scrapedtitle in matches:
         title = scrapertools.htmlclean(scrapedtitle)
         url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        if (config.get_setting("pordedesortlist")=='true'):
-            itemsort.append({'title': title, 'url' : url})
-        else:
-            itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
+        itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
 
-    if (config.get_setting("pordedesortlist")=='true'):
-        itemsort = sorted(itemsort, key=lambda k: k['title'])
-        for item in itemsort:
-            itemlist.append( Item(channel=__channel__, action="lista" , title=item['title'] , url=item['url']))
+    try:
+        import xbmcplugin
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
+        #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+        #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RATING)
+    except:
+        pass
 
     return itemlist
 
@@ -481,7 +449,7 @@ def lista(item):
     logger.info("html="+json_object["html"])
     data = json_object["html"]
 
-    return parse_mixed_results(item,data,(config.get_setting("pordedesortlist")=='true'))
+    return parse_mixed_results(item,data)
 
 def findvideos(item, verTodos=False):
     logger.info("pelisalacarta.channels.pordede findvideos")
@@ -710,8 +678,8 @@ class TextBox( xbmcgui.WindowXML ):
 # Valoraciones de enlaces, los valores más altos se mostrarán primero :
 
 def valora_calidad(video, audio):
-    prefs_video = [ 'hdmicro', 'hd1080', 'hd720', 'hdrip', 'dvrip', 'rip' ]
-    prefs_audio = [ '5.1', 'rip', 'line', 'screener' ]
+    prefs_video = [ 'hdmicro', 'hd1080', 'hd720', 'hdrip', 'dvdrip', 'rip', 'tc-screener', 'ts-screener' ]
+    prefs_audio = [ 'dts', '5.1', 'rip', 'line', 'screener' ]
 
     video = ''.join(video.split()).lower()
     pts = (9 - prefs_video.index(video) if video in prefs_video else 1) * 10
