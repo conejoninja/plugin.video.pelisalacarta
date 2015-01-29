@@ -25,13 +25,13 @@ except:
 DEBUG = True
 
 # TODO: (3.2) Esto es un lío, hay que unificar
-def addnewfolder( canal , accion , category , title , url , thumbnail , plot , Serie="",totalItems=0,fanart="",context="", show="",fulltitle="", year="", rating=""):
+def addnewfolder( canal , accion , category , title , url , thumbnail , plot , Serie="",totalItems=0,fanart="",context="", show="",fulltitle=""):
     if fulltitle=="":
         fulltitle=title
-    ok = addnewfolderextra( canal , accion , category , title , url , thumbnail , plot , "" ,Serie,totalItems,fanart,context,show, fulltitle, year,rating)
+    ok = addnewfolderextra( canal , accion , category , title , url , thumbnail , plot , "" ,Serie,totalItems,fanart,context,show, fulltitle)
     return ok
 
-def addnewfolderextra( canal , accion , category , title , url , thumbnail , plot , extradata ,Serie="",totalItems=0,fanart="",context="",show="",fulltitle="", year="", rating=""):
+def addnewfolderextra( canal , accion , category , title , url , thumbnail , plot , extradata ,Serie="",totalItems=0,fanart="",context="",show="",fulltitle=""):
     if fulltitle=="":
         fulltitle=title
     
@@ -53,7 +53,7 @@ def addnewfolderextra( canal , accion , category , title , url , thumbnail , plo
             logger.info('[xbmctools.py] addnewfolder(<unicode>)')
     listitem = xbmcgui.ListItem( title, iconImage="DefaultFolder.png", thumbnailImage=thumbnail )
 
-    listitem.setInfo( "video", { "Title" : title, "Plot" : plot, "Studio" : canal, "Year" : year, "Rating" : rating } )
+    listitem.setInfo( "video", { "Title" : title, "Plot" : plot, "Studio" : canal } )
 
     if fanart!="":
         listitem.setProperty('fanart_image',fanart) 
@@ -844,9 +844,9 @@ def renderItems(itemlist, params, url, category, isPlayable='false'):
 
             if item.folder :
                 if len(item.extra)>0:
-                    addnewfolderextra( item.channel , item.action , item.category , item.title , item.url , item.thumbnail , item.plot , extradata = item.extra , totalItems = len(itemlist), fanart=item.fanart , context=item.context, show=item.show, fulltitle=item.fulltitle, year=item.year, rating=item.rating )
+                    addnewfolderextra( item.channel , item.action , item.category , item.title , item.url , item.thumbnail , item.plot , extradata = item.extra , totalItems = len(itemlist), fanart=item.fanart , context=item.context, show=item.show, fulltitle=item.fulltitle )
                 else:
-                    addnewfolder( item.channel , item.action , item.category , item.title , item.url , item.thumbnail , item.plot , totalItems = len(itemlist) , fanart = item.fanart, context = item.context, show=item.show, fulltitle=item.fulltitle, year=item.year, rating=item.rating )
+                    addnewfolder( item.channel , item.action , item.category , item.title , item.url , item.thumbnail , item.plot , totalItems = len(itemlist) , fanart = item.fanart, context = item.context, show=item.show, fulltitle=item.fulltitle )
             else:
                 if config.get_setting("player_mode")=="1": # SetResolvedUrl debe ser siempre "isPlayable = true"
                     isPlayable = "true"
