@@ -49,6 +49,7 @@ def mainlist(item):
         itemlist.append( Item(channel=__channel__, action="menupeliculas" , title="Películas"           , url="" ))
         itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Listas que sigues"   , url="http://www.pordede.com/lists/following" ))
         itemlist.append( Item(channel=__channel__, action="tus_listas"    , title="Tus listas"          , url="http://www.pordede.com/lists/yours" ))
+        itemlist.append( Item(channel=__channel__, action="listas_top"    , title="Top listas"          , url="http://www.pordede.com/lists" ))
        
     return itemlist
 
@@ -349,8 +350,8 @@ def episodios(item):
 
     return itemlist
 
-def listas_sigues(item):
-    logger.info("pelisalacarta.channels.pordede listas_sigues")
+def parse_listas(item, patron):
+    logger.info("pelisalacarta.channels.pordede listas_propias_ajenas")
 
     # Descarga la pagina
     headers = DEFAULT_HEADERS[:]
@@ -363,9 +364,6 @@ def listas_sigues(item):
     json_object = jsontools.load_json(data)
     logger.info("html="+json_object["html"])
     data = json_object["html"]
-
-    patron  = '<div class="clearfix modelContainer" data-model="lista"[^<]+'
-    patron += '<span class="title"><span class="name"><a class="defaultLink" href="([^"]+)">([^<]+)</a>'
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
@@ -383,27 +381,29 @@ def listas_sigues(item):
         import xbmcplugin
         xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
         xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
-        #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-        #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RATING)
     except:
         pass
 
     return itemlist
 
+def listas_top(item):
+    logger.info("pelisalacarta.channels.pordede listas_top")
+
+    patron  = '<div class="clearfix modelContainer" data-model="lista"[^<]+'
+    patron += '<span class="title"><span class="name"><a class="defaultLink" href="([^"]+)">([^<]+)</a>'
+    
+    return parse_listas(item, patron)
+
+def listas_sigues(item):
+    logger.info("pelisalacarta.channels.pordede listas_sigues")
+
+    patron  = '<div class="clearfix modelContainer" data-model="lista"[^<]+'
+    patron += '<span class="title"><span class="name"><a class="defaultLink" href="([^"]+)">([^<]+)</a>'
+
+    return parse_listas(item, patron)
+
 def tus_listas(item):
     logger.info("pelisalacarta.channels.pordede tus_listas")
-
-    # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
-
-    # Extrae las entradas (carpetas)  
-    json_object = jsontools.load_json(data)
-    logger.info("html="+json_object["html"])
-    data = json_object["html"]
 
     patron  = '<div class="clearfix modelContainer" data-model="lista"[^<]+'
     patron += '<div class="right"[^<]+'
@@ -412,27 +412,7 @@ def tus_listas(item):
     patron += '</div[^<]+'
     patron += '<span class="title"><span class="name"><a class="defaultLink" href="([^"]+)">([^<]+)</a>'
 
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    itemlist = []
-
-    for scrapedurl,scrapedtitle in matches:
-        title = scrapertools.htmlclean(scrapedtitle)
-        url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
-        thumbnail = ""
-        plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
-
-    try:
-        import xbmcplugin
-        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
-        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
-        #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-        #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RATING)
-    except:
-        pass
-
-    return itemlist
+    return parse_listas(item, patron)
 
 def lista(item):
     logger.info("pelisalacarta.channels.pordede lista")
