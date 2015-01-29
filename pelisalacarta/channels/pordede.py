@@ -49,7 +49,7 @@ def mainlist(item):
         itemlist.append( Item(channel=__channel__, action="menupeliculas" , title="Películas"           , url="" ))
         itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Listas que sigues"   , url="http://www.pordede.com/lists/following" ))
         itemlist.append( Item(channel=__channel__, action="tus_listas"    , title="Tus listas"          , url="http://www.pordede.com/lists/yours" ))
-        itemlist.append( Item(channel=__channel__, action="listas_top"    , title="Top listas"          , url="http://www.pordede.com/lists" ))
+        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Top listas"          , url="http://www.pordede.com/lists" ))
        
     return itemlist
 
@@ -368,12 +368,17 @@ def parse_listas(item, patron):
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
     
-    for scrapedurl,scrapedtitle in matches:
-        title = scrapertools.htmlclean(scrapedtitle)
+    for scrapedurl,scrapedtitle,scrapeduser,scrapedfichas in matches:
+        title = scrapertools.htmlclean(scrapedtitle + ' (' + scrapedfichas + ' fichas, por ' + scrapeduser + ')')
         url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
         thumbnail = ""
         itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
+    nextpage = scrapertools.find_single_match(data,'data-url="(/lists/loadlists/offset/[^"]+)"')
+    if nextpage != '':
+        url = urlparse.urljoin(item.url,nextpage)
+        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title=">> Página siguiente" , extra=item.extra, url=url))
 
     try:
         import xbmcplugin
@@ -384,19 +389,12 @@ def parse_listas(item, patron):
 
     return itemlist
 
-def listas_top(item):
-    logger.info("pelisalacarta.channels.pordede listas_top")
-
-    patron  = '<div class="clearfix modelContainer" data-model="lista"[^<]+'
-    patron += '<span class="title"><span class="name"><a class="defaultLink" href="([^"]+)">([^<]+)</a>'
-    
-    return parse_listas(item, patron)
-
 def listas_sigues(item):
     logger.info("pelisalacarta.channels.pordede listas_sigues")
 
     patron  = '<div class="clearfix modelContainer" data-model="lista"[^<]+'
     patron += '<span class="title"><span class="name"><a class="defaultLink" href="([^"]+)">([^<]+)</a>'
+    patron += '</span>[^<]+<a[^>]+>([^<]+)</a></span>\s+<div[^<]+<div[^<]+</div>\s+<div class="info">\s+<p>([0-9]+)'
 
     return parse_listas(item, patron)
 
@@ -409,6 +407,7 @@ def tus_listas(item):
     patron += '<button[^<]+</button[^<]+'
     patron += '</div[^<]+'
     patron += '<span class="title"><span class="name"><a class="defaultLink" href="([^"]+)">([^<]+)</a>'
+    patron += '</span>[^<]+<a[^>]+>([^<]+)</a></span>\s+<div[^<]+<div[^<]+</div>\s+<div class="info">\s+<p>([0-9]+)'
 
     return parse_listas(item, patron)
 
