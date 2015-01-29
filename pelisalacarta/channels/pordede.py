@@ -65,7 +65,7 @@ def menuseries(item):
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/series/loadmedia/offset/0/showlist/hot" ))
     itemlist.append( Item(channel=__channel__, action="generos"   , title="Por géneros"          , url="http://www.pordede.com/series" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Siguiendo"            , url="http://www.pordede.com/series/following" ))
-    itemlist.append( Item(channel=__channel__, action="siguientes" , title="Siguientes Cap." , url="http://www.pordede.com" ))
+    itemlist.append( Item(channel=__channel__, action="siguientes" , title="Siguientes Capítulos" , url="http://www.pordede.com" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Favoritas"            , url="http://www.pordede.com/series/favorite" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Pendientes"           , url="http://www.pordede.com/series/pending" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Terminadas"           , url="http://www.pordede.com/series/seen" ))
@@ -244,13 +244,6 @@ def siguientes(item):
         itemlist.append( Item(channel=__channel__, action="episodio" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie", extra=session+"|"+episode))
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-
-    #http://www.pordede.com/pelis/loadmedia/offset/30/showlist/hot?popup=1
-    if "offset" in item.url:
-        old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
-        new_offset = int(old_offset)+30
-        url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=">> Página siguiente" , extra=item.extra, url=url))
 
     return itemlist
 
@@ -451,9 +444,8 @@ def findvideos(item, verTodos=False):
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
 
-    if "/what/peli" in item.url:
-        url_aux = item.url.replace("/links/view/slug/", "/peli/").replace("/what/peli", "")
-        itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=url_aux, thumbnail=item.thumbnail,  folder=False ))
+    if config.get_platform().startswith("xbmc") and "/what/peli" in item.url:
+        itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=item.url, thumbnail=item.thumbnail,  folder=False ))
 
     itemsort = []
     sortlinks = config.get_setting("pordedesortlinks") # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
@@ -594,11 +586,12 @@ def checkseen(item):
 def infosinopsis(item):
     logger.info("pelisalacarta.channels.pordede infosinopsis")
 
+    url_aux = item.url.replace("/links/view/slug/", "/peli/").replace("/what/peli", "")
     # Descarga la pagina
     headers = DEFAULT_HEADERS[:]
     #headers.append(["Referer",item.extra])
     #headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
+    data = scrapertools.cache_page(url_aux,headers=headers)
     #logger.info("data="+data)
 
     scrapedtitle = scrapertools.find_single_match(data,'<h1>([^<]+)</h1>')
@@ -626,31 +619,34 @@ def infosinopsis(item):
     del tbd
     return
 
-import xbmcgui
-class TextBox( xbmcgui.WindowXML ):
-    """ Create a skinned textbox window """
-    def __init__( self, *args, **kwargs):
-        pass
-        
-    def onInit( self ):
-        try:
-            self.getControl( 5 ).setText( self.text )
-            self.getControl( 1 ).setLabel( self.title )
-        except: pass
-
-    def onClick( self, controlId ):
-        pass
-
-    def onFocus( self, controlId ):
-        pass
-
-    def onAction( self, action ):
-        self.close()
-
-    def ask(self, title, text ):
-        self.title = title
-        self.text = text
-        self.doModal()
+try:
+    import xbmcgui
+    class TextBox( xbmcgui.WindowXML ):
+        """ Create a skinned textbox window """
+        def __init__( self, *args, **kwargs):
+            pass
+            
+        def onInit( self ):
+            try:
+                self.getControl( 5 ).setText( self.text )
+                self.getControl( 1 ).setLabel( self.title )
+            except: pass
+    
+        def onClick( self, controlId ):
+            pass
+    
+        def onFocus( self, controlId ):
+            pass
+    
+        def onAction( self, action ):
+            self.close()
+    
+        def ask(self, title, text ):
+            self.title = title
+            self.text = text
+            self.doModal()
+except:
+    pass
 
 # Valoraciones de enlaces, los valores más altos se mostrarán primero :
 
