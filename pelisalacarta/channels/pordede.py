@@ -93,7 +93,7 @@ def generos(item):
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
     data = scrapertools.find_single_match(data,'<div class="section genre">(.*?)</div>')
@@ -143,11 +143,11 @@ def buscar(item):
     headers.append(["Referer",item.extra])
     headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     json_object = jsontools.load_json(data)
-    logger.info("html="+json_object["html"])
+    if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
 
     return parse_mixed_results(item,data)
@@ -208,11 +208,11 @@ def siguientes(item):
     headers.append(["Referer",item.extra])
     headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     json_object = jsontools.load_json(data)
-    logger.info("html2="+json_object["html"])
+    if (DEBUG): logger.info("html2="+json_object["html"])
     data = json_object["html"]
     patron = ''
     patron += '<div class="coverMini shadow tiptip" title="([^"]+)">[^<]+'
@@ -253,7 +253,7 @@ def episodio(item):
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     session = str(int(item.extra.split("|")[0]))
     episode = str(int(item.extra.split("|")[1]))
@@ -261,7 +261,7 @@ def episodio(item):
     matchestemporadas = re.compile(patrontemporada,re.DOTALL).findall(data)
 
     for bloque_episodios in matchestemporadas:
-        logger.info("bloque_episodios="+bloque_episodios)
+        if (DEBUG): logger.info("bloque_episodios="+bloque_episodios)
 
         # Extrae los episodios
         patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">'+episode+' </span>([^<]+)</span>(\s*</div>\s*<span[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></span><div[^>]*><button[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></button><div class="action([^"]*)" data-action="seen">)?'
@@ -294,11 +294,11 @@ def peliculas(item):
     headers.append(["Referer",item.extra])
     headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     json_object = jsontools.load_json(data)
-    logger.info("html="+json_object["html"])
+    if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
 
     return parse_mixed_results(item,data)
@@ -309,14 +309,14 @@ def episodios(item):
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
-    #logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     patrontemporada = '<div class="checkSeason"[^>]+>([^<]+)<div class="right" onclick="controller.checkSeason(.*?)\s+</div></div>'
     matchestemporadas = re.compile(patrontemporada,re.DOTALL).findall(data)
 
     for nombre_temporada,bloque_episodios in matchestemporadas:
-        logger.info("nombre_temporada="+nombre_temporada)
-        logger.info("bloque_episodios="+bloque_episodios)
+        if (DEBUG): logger.info("nombre_temporada="+nombre_temporada)
+        if (DEBUG): logger.info("bloque_episodios="+bloque_episodios)
 
         # Extrae los episodios
         patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">([^<]+)</span>([^<]+)</span>(\s*</div>\s*<span[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></span><div[^>]*><button[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></button><div class="action([^"]*)" data-action="seen">)?'
@@ -340,7 +340,6 @@ def episodios(item):
         itemlist.append( Item(channel='pordede', title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios###", show=item.show) )
         itemlist.append( Item(channel='pordede', title="Descargar todos los episodios de la serie", url=item.url, action="download_all_episodes", extra="episodios", show=item.show))
 
-
     return itemlist
 
 def parse_listas(item, patron):
@@ -351,11 +350,11 @@ def parse_listas(item, patron):
     headers.append(["Referer",item.extra])
     headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     json_object = jsontools.load_json(data)
-    logger.info("html="+json_object["html"])
+    if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
 
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -412,11 +411,11 @@ def lista(item):
     headers.append(["Referer",item.extra])
     headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     json_object = jsontools.load_json(data)
-    logger.info("html="+json_object["html"])
+    if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
 
     return parse_mixed_results(item,data)
@@ -429,16 +428,16 @@ def findvideos(item, verTodos=False):
     #headers.append(["Referer",item.extra])
     #headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    #logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     #json_object = jsontools.load_json(data)
-    #logger.info("html="+json_object["html"])
+    #if (DEBUG): logger.info("html="+json_object["html"])
     #data = json_object["html"]
 
 
     sesion = scrapertools.find_single_match(data,'SESS = "([^"]+)";')
-    logger.info("sesion="+sesion)
+    if (DEBUG): logger.info("sesion="+sesion)
 
     patron  = '<a target="_blank" class="a aporteLink(.*?)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -454,7 +453,7 @@ def findvideos(item, verTodos=False):
     showlinks = int(showlinks) if showlinks != '' else 0
 
     for match in matches:
-        logger.info("match="+match)
+        if (DEBUG): logger.info("match="+match)
 
         jdown = scrapertools.find_single_match(match,'<div class="jdownloader">[^<]+</div>')
         if (showlinks == 1 and jdown != '') or (showlinks == 2 and jdown == ''): # Descartar enlaces veronline/descargar
@@ -470,15 +469,14 @@ def findvideos(item, verTodos=False):
             idioma = idioma_0
 
         calidad_video = scrapertools.find_single_match(match,'<div class="linkInfo quality"><i class="icon-facetime-video"></i>([^<]+)</div>')
-        logger.info("calidad_video="+calidad_video)
+        if (DEBUG): logger.info("calidad_video="+calidad_video)
         calidad_audio = scrapertools.find_single_match(match,'<div class="linkInfo qualityaudio"><i class="icon-headphones"></i>([^<]+)</div>')
-        logger.info("calidad_audio="+calidad_audio)
-
+        if (DEBUG): logger.info("calidad_audio="+calidad_audio)
 
         thumb_servidor = scrapertools.find_single_match(match,'<div class="hostimage"[^<]+<img\s*src="([^"]+)">')
-        logger.info("thumb_servidor="+thumb_servidor)
+        if (DEBUG): logger.info("thumb_servidor="+thumb_servidor)
         nombre_servidor = scrapertools.find_single_match(thumb_servidor,"popup_([^\.]+)\.png")
-        logger.info("nombre_servidor="+nombre_servidor)
+        if (DEBUG): logger.info("nombre_servidor="+nombre_servidor)
         
         title = ("Download " if jdown != '' else "Ver en ")+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
 
@@ -544,7 +542,7 @@ def play(item):
     headers.append( ["Referer" , item.extra.split("|")[1] ])
 
     data = scrapertools.cache_page(item.url,post="_s="+item.extra.split("|")[0],headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
     #url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
     url = scrapertools.find_single_match(data,'<p class="links">\s+<a href="([^"]+)" target="_blank"')
     url = urlparse.urljoin(item.url,url)
@@ -566,7 +564,6 @@ def play(item):
     return itemlist    
 
 def checkseen(item):
-
     logger.info("pelisalacarta.channels.pordede checkseen "+item)
 
     if "/viewepisode/" in item:
@@ -592,7 +589,7 @@ def infosinopsis(item):
     #headers.append(["Referer",item.extra])
     #headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(url_aux,headers=headers)
-    #logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     scrapedtitle = scrapertools.find_single_match(data,'<h1>([^<]+)</h1>')
     scrapedvalue = scrapertools.find_single_match(data,'<span class="puntuationValue" data-value="([^"]+)"')
