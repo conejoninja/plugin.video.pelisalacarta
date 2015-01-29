@@ -351,7 +351,7 @@ def episodios(item):
     return itemlist
 
 def parse_listas(item, patron):
-    logger.info("pelisalacarta.channels.pordede listas_propias_ajenas")
+    logger.info("pelisalacarta.channels.pordede parse_listas")
 
     # Descarga la pagina
     headers = DEFAULT_HEADERS[:]
@@ -372,9 +372,7 @@ def parse_listas(item, patron):
         title = scrapertools.htmlclean(scrapedtitle)
         url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
         thumbnail = ""
-        plot = ""
         itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
-
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     try:
