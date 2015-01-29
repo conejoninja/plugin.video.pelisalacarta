@@ -177,11 +177,11 @@ def parse_mixed_results(item,data):
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/peli/","/links/view/slug/")+"/what/peli"
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie", year=scrapedyear, rating=scrapedvalue))
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
-            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie", year=scrapedyear, rating=scrapedvalue))
+            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
 
     if "offset/" in item.url:
         old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
@@ -193,8 +193,6 @@ def parse_mixed_results(item,data):
         import xbmcplugin
         xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
         xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
-        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RATING)
     except:
         pass
 
@@ -434,7 +432,6 @@ def findvideos(item, verTodos=False):
     #json_object = jsontools.load_json(data)
     #if (DEBUG): logger.info("html="+json_object["html"])
     #data = json_object["html"]
-
 
     sesion = scrapertools.find_single_match(data,'SESS = "([^"]+)";')
     if (DEBUG): logger.info("sesion="+sesion)
