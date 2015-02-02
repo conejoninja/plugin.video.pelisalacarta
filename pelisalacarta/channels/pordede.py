@@ -505,7 +505,19 @@ def findvideos(item):
     patron  = '<a target="_blank" class="a aporteLink(.*?)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    
+
+    if "/what/peli" in item.url:
+        url_aux = item.url.replace("/links/view/slug/", "/peli/").replace("/what/peli", "")
+        itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=url_aux, thumbnail=item.thumbnail,  folder=False ))
+
+    itemsort = []
+    sortvideos = False
+
+    if len(matches) < 200:
+        if (config.get_setting("pordedesortlinks")=='true'):
+            sortvideos = True
+            
+
     for match in matches:
         logger.info("match="+match)
 
@@ -532,10 +544,14 @@ def findvideos(item):
         title = ("Download " if jdown != '' else "Ver en ")+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
 
         cuenta = []
+        valoracion = 0
         for idx, val in enumerate(['1', '2', 'report']):
             nn = scrapertools.find_single_match(match,'<span\s+data-num="([^"]+)"\s+class="defaultPopup"\s+href="/likes/popup/value/'+val+'/')
             if nn != '0' and nn != '':
                 cuenta.append(nn + ' ' + ['ok', 'ko', 'rep'][idx])
+                valoracion += int(nn) if val == '1' else -int(nn)
+        if jdown != '': # para dejar los "downloads" detras de los "ver" al ordenar
+            valoracion += -1000
 
         if len(cuenta) > 0:
             title += ' (' + ', '.join(cuenta) + ')'
@@ -544,7 +560,15 @@ def findvideos(item):
         thumbnail = thumb_servidor
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
+        if sortvideos:
+            itemsort.append({'action': "play", 'title': title, 'url':url, 'thumbnail':thumbnail, 'plot':plot, 'extra':sesion+"|"+item.url, 'fulltitle':title, 'valoracion':valoracion})
+        else:
+            itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
+
+    if sortvideos:
+        itemsort = sorted(itemsort, key=lambda k: k['valoracion'], reverse=True)
+        for subitem in itemsort:
+            itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
 
     return itemlist
 
@@ -561,7 +585,8 @@ def play(item):
 
     data = scrapertools.cache_page(item.url,post="_s="+item.extra.split("|")[0],headers=headers)
     logger.info("data="+data)
-    url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
+    #url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
+    url = scrapertools.find_single_match(data,'<p class="links">\s+<a href="([^"]+)" target="_blank"')
     url = urlparse.urljoin(item.url,url)
 
     headers = DEFAULT_HEADERS[:]
@@ -597,3 +622,64 @@ def checkseen(item):
 
 
     return True
+
+def infosinopsis(item):
+    logger.info("pelisalacarta.channels.pordede infosinopsis")
+
+    # Descarga la pagina
+    headers = DEFAULT_HEADERS[:]
+    #headers.append(["Referer",item.extra])
+    #headers.append(["X-Requested-With","XMLHttpRequest"])
+    data = scrapertools.cache_page(item.url,headers=headers)
+    #logger.info("data="+data)
+
+    scrapedtitle = scrapertools.find_single_match(data,'<h1>([^<]+)</h1>')
+    scrapedvalue = scrapertools.find_single_match(data,'<span class="puntuationValue" data-value="([^"]+)"')
+    scrapedyear = scrapertools.find_single_match(data,'<h2 class="info">[^<]+</h2>\s*<p class="info">([^<]+)</p>')
+    scrapedduration = scrapertools.find_single_match(data,'<h2 class="info">[^<]+</h2>\s*<p class="info">([^<]+)</p>', 1)
+    scrapedplot = scrapertools.find_single_match(data,'<div class="info text"[^>]+>([^<]+)</div>')
+    #scrapedthumbnail = scrapertools.find_single_match(data,'<meta property="og:image" content="([^"]+)"')
+    #thumbnail = scrapedthumbnail.replace("http://www.pordede.comhttp://", "http://").replace("mediacover", "mediathumb")
+    scrapedgenres = re.compile('href="/pelis/index/genre/[^"]+">([^<]+)</a>',re.DOTALL).findall(data)
+    scrapedcasting = re.compile('href="/star/[^"]+">([^<]+)</a><br/><span>([^<]+)</span>',re.DOTALL).findall(data)
+
+    title = scrapertools.htmlclean(scrapedtitle)
+    plot = "Año: [B]"+scrapedyear+"[/B]"
+    plot += " , Duración: [B]"+scrapedduration+"[/B]"
+    plot += " , Puntuación usuarios: [B]"+scrapedvalue+"[/B]"
+    plot += "\nGéneros: "+", ".join(scrapedgenres)
+    plot += "\n\nSinopsis:\n"+scrapertools.htmlclean(scrapedplot)
+    plot += "\n\nCasting:\n"
+    for actor,papel in scrapedcasting:
+    	plot += actor+" ("+papel+"). "
+
+    tbd = TextBox("DialogTextViewer.xml", os.getcwd(), "Default")
+    tbd.ask(title, plot)
+    del tbd
+    return
+
+import xbmcgui
+class TextBox( xbmcgui.WindowXML ):
+    """ Create a skinned textbox window """
+    def __init__( self, *args, **kwargs):
+        pass
+        
+    def onInit( self ):
+        try:
+            self.getControl( 5 ).setText( self.text )
+            self.getControl( 1 ).setLabel( self.title )
+        except: pass
+
+    def onClick( self, controlId ):
+        pass
+
+    def onFocus( self, controlId ):
+        pass
+
+    def onAction( self, action ):
+        self.close()
+
+    def ask(self, title, text ):
+        self.title = title
+        self.text = text
+        self.doModal()
