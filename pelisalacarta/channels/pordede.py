@@ -483,7 +483,7 @@ def lista(item):
 
     return parse_mixed_results(item,data,(config.get_setting("pordedesortlist")=='true'))
 
-def findvideos(item):
+def findvideos(item, verTodos=False):
     logger.info("pelisalacarta.channels.pordede findvideos")
 
     # Descarga la pagina
@@ -511,24 +511,26 @@ def findvideos(item):
         itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=url_aux, thumbnail=item.thumbnail,  folder=False ))
 
     itemsort = []
-    sortvideos = False
-
-    if len(matches) < 200:
-        if (config.get_setting("pordedesortlinks")=='true'):
-            sortvideos = True
-            
+    sortlinks = config.get_setting("pordedesortlinks") # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
+    sortlinks = int(sortlinks) if sortlinks != '' else 0
+    showlinks = config.get_setting("pordedeshowlinks") # 0:todos, 1:ver online, 2:descargar
+    showlinks = int(showlinks) if showlinks != '' else 0
 
     for match in matches:
         logger.info("match="+match)
 
-        # Descartar enlaces de descarga
         jdown = scrapertools.find_single_match(match,'<div class="jdownloader">[^<]+</div>')
+        if (showlinks == 1 and jdown != '') or (showlinks == 2 and jdown == ''): # Descartar enlaces veronline/descargar
+            continue
 
-        idioma_1 = scrapertools.find_single_match(match,'<div class="flag([^"]+)">([^<]+)</div>')
-        idioma = (idioma_1[0].replace("&nbsp;","").strip() + " " + idioma_1[1].replace("&nbsp;","").strip()).strip()
-        idioma_2 = scrapertools.find_single_match(match,'<div class="flag([^"]+)">([^<]+)</div>', 1)
-        if idioma_2:
-                idioma += ", " + (idioma_2[0].replace("&nbsp;","").strip() + " " + idioma_2[1].replace("&nbsp;","").strip()).strip()
+        idiomas = re.compile('<div class="flag([^"]+)">([^<]+)</div>',re.DOTALL).findall(match)
+        idioma_0 = (idiomas[0][0].replace("&nbsp;","").strip() + " " + idiomas[0][1].replace("&nbsp;","").strip()).strip()
+        if len(idiomas) > 1:
+            idioma_1 = (idiomas[1][0].replace("&nbsp;","").strip() + " " + idiomas[1][1].replace("&nbsp;","").strip()).strip()
+            idioma = idioma_0 + ", " + idioma_1
+        else:
+            idioma_1 = ''
+            idioma = idioma_0
 
         calidad_video = scrapertools.find_single_match(match,'<div class="linkInfo quality"><i class="icon-facetime-video"></i>([^<]+)</div>')
         logger.info("calidad_video="+calidad_video)
@@ -550,8 +552,6 @@ def findvideos(item):
             if nn != '0' and nn != '':
                 cuenta.append(nn + ' ' + ['ok', 'ko', 'rep'][idx])
                 valoracion += int(nn) if val == '1' else -int(nn)
-        if jdown != '': # para dejar los "downloads" detras de los "ver" al ordenar
-            valoracion += -1000
 
         if len(cuenta) > 0:
             title += ' (' + ', '.join(cuenta) + ')'
@@ -560,18 +560,41 @@ def findvideos(item):
         thumbnail = thumb_servidor
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        if sortvideos:
-            itemsort.append({'action': "play", 'title': title, 'url':url, 'thumbnail':thumbnail, 'plot':plot, 'extra':sesion+"|"+item.url, 'fulltitle':title, 'valoracion':valoracion})
+        if sortlinks > 0:
+            # orden1 para dejar los "downloads" detras de los "ver" al ordenar
+            # orden2 segun configuración
+            if sortlinks == 1:
+                orden = valoracion
+            elif sortlinks == 2:
+                orden = valora_idioma(idioma_0, idioma_1)
+            elif sortlinks == 3:
+                orden = valora_calidad(calidad_video, calidad_audio)
+            elif sortlinks == 4:
+                orden = (valora_idioma(idioma_0, idioma_1) * 100) + valora_calidad(calidad_video, calidad_audio)
+            elif sortlinks == 5:
+                orden = (valora_idioma(idioma_0, idioma_1) * 1000) + valoracion
+            elif sortlinks == 6:
+                orden = (valora_idioma(idioma_0, idioma_1) * 100000) + (valora_calidad(calidad_video, calidad_audio) * 1000) + valoracion
+            itemsort.append({'action': "play", 'title': title, 'url':url, 'thumbnail':thumbnail, 'plot':plot, 'extra':sesion+"|"+item.url, 'fulltitle':title, 'orden1': (jdown == ''), 'orden2':orden})
         else:
             itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
 
-    if sortvideos:
-        itemsort = sorted(itemsort, key=lambda k: k['valoracion'], reverse=True)
-        for subitem in itemsort:
+    if sortlinks > 0:
+        numberlinks = config.get_setting("pordedenumberlinks") # 0:todos, > 0:n*5 (5,10,15,20,...)
+        numberlinks = int(numberlinks) * 5 if numberlinks != '' else 0
+        if numberlinks == 0:
+            verTodos = True
+        itemsort = sorted(itemsort, key=lambda k: (k['orden1'], k['orden2']), reverse=True)
+        for i, subitem in enumerate(itemsort):
+            if verTodos == False and i >= numberlinks:
+                itemlist.append(Item(channel=__channel__, action='findallvideos' , title='Ver todos los enlaces', url=item.url, extra=item.extra ))
+                break
             itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
 
     return itemlist
 
+def findallvideos(item):
+    return findvideos(item,True)
 
 def play(item):
     logger.info("pelisalacarta.channels.pordede play url="+item.url)
@@ -691,3 +714,28 @@ class TextBox( xbmcgui.WindowXML ):
         self.title = title
         self.text = text
         self.doModal()
+
+# Valoraciones de enlaces, los valores más altos se mostrarán primero :
+
+def valora_calidad(video, audio):
+    prefs_video = [ 'hdmicro', 'hd1080', 'hd720', 'hdrip', 'dvdrip', 'rip', 'tc-screener', 'ts-screener' ]
+    prefs_audio = [ 'dts', '5.1', 'rip', 'line', 'screener' ]
+
+    video = ''.join(video.split()).lower()
+    pts = (9 - prefs_video.index(video) if video in prefs_video else 1) * 10
+
+    audio = ''.join(audio.split()).lower()
+    pts += 9 - prefs_audio.index(audio) if audio in prefs_audio else 1
+
+    return pts
+
+def valora_idioma(idioma_0, idioma_1):
+    prefs = [ 'spanish', 'spanish LAT', 'catalan', 'english', 'french' ]
+
+    pts = (9 - prefs.index(idioma_0) if idioma_0 in prefs else 1) * 10
+    if idioma_1 != '': # si hay subtítulos
+        idioma_1 = idioma_1.replace(' SUB', '')
+        pts += 8 - prefs.index(idioma_1) if idioma_1 in prefs else 1
+    else:
+        pts += 9 # sin subtítulos por delante
+    return pts
