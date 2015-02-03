@@ -56,8 +56,27 @@ ALLDEBRID_SERVERS = ['one80upload','onefichier','twoshared','fourfastfile','four
                    'userporn','vimeo','vipfile','youporn','youtube','yunfile','zippyshare','lumfile','ultramegabit','filesmonster']
     
 # Lista completa de todos los servidores soportados por pelisalacarta, usada para buscar patrones
-ALL_SERVERS = list( set(FREE_SERVERS) | set(FILENIUM_SERVERS) | set(REALDEBRID_SERVERS) | set(ALLDEBRID_SERVERS) )
-ALL_SERVERS.sort()
+#ALL_SERVERS = list( set(FREE_SERVERS) | set(FILENIUM_SERVERS) | set(REALDEBRID_SERVERS) | set(ALLDEBRID_SERVERS) )
+#ALL_SERVERS.sort()
+
+# Lista de servidores activos en funcion de: Configuracion/Cuentas
+if config.get_setting("hidepremium")=="false":
+    ENABLED_SERVERS= list( set(FREE_SERVERS) | set(FILENIUM_SERVERS) | set(REALDEBRID_SERVERS) | set(ALLDEBRID_SERVERS) )
+else:
+    ENABLED_SERVERS= set(FREE_SERVERS)
+    if config.get_setting("uploadedtopremium")=="true":
+        ENABLED_SERVERS.add('uploadedto')
+    if config.get_setting("nowvideopremium")=="true":
+        ENABLED_SERVERS.add('nowvideo')
+    if config.get_setting("fileniumpremium")=="true":
+        ENABLED_SERVERS= ENABLED_SERVERS | set(FILENIUM_SERVERS)
+    if config.get_setting("realdebridpremium")=="true":
+        ENABLED_SERVERS= ENABLED_SERVERS | set(REALDEBRID_SERVERS)
+    if config.get_setting("alldebridpremium")=="true":
+        ENABLED_SERVERS= ENABLED_SERVERS | set(ALLDEBRID_SERVERS)
+    ENABLED_SERVERS= list (ENABLED_SERVERS)
+ENABLED_SERVERS.sort()
+
 
 # Función genérica para encontrar vídeos en una página
 def find_video_items(item=None, data=None, channel=""):
@@ -115,7 +134,8 @@ def findvideos(data):
     devuelve = []
 
     # Ejecuta el findvideos en cada servidor
-    for serverid in ALL_SERVERS:
+    #for serverid in ALL_SERVERS:
+    for serverid in ENABLED_SERVERS:
         try:
             # Sustituye el código por otro "Plex compatible"
             #exec "from servers import "+serverid
@@ -327,3 +347,8 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             return video_urls,False,"Se ha producido un error en<br/>el conector con "+server
 
     return video_urls,True,""
+    
+def is_server_enabled (server):
+    server=scrapertools.find_single_match(server,'(.*?)\..*?')
+    return server in ENABLED_SERVERS
+  
