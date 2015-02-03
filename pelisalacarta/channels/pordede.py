@@ -49,6 +49,7 @@ def mainlist(item):
         itemlist.append( Item(channel=__channel__, action="menupeliculas" , title="Películas"           , url="" ))
         itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Listas que sigues"   , url="http://www.pordede.com/lists/following" ))
         itemlist.append( Item(channel=__channel__, action="tus_listas"    , title="Tus listas"          , url="http://www.pordede.com/lists/yours" ))
+        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Top listas"          , url="http://www.pordede.com/lists" ))
        
     return itemlist
 
@@ -64,7 +65,7 @@ def menuseries(item):
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/series/loadmedia/offset/0/showlist/hot" ))
     itemlist.append( Item(channel=__channel__, action="generos"   , title="Por géneros"          , url="http://www.pordede.com/series" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Siguiendo"            , url="http://www.pordede.com/series/following" ))
-    itemlist.append( Item(channel=__channel__, action="siguientes" , title="Siguientes Cap." , url="http://www.pordede.com" ))
+    itemlist.append( Item(channel=__channel__, action="siguientes" , title="Siguientes Capítulos" , url="http://www.pordede.com" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Favoritas"            , url="http://www.pordede.com/series/favorite" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Pendientes"           , url="http://www.pordede.com/series/pending" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Terminadas"           , url="http://www.pordede.com/series/seen" ))
@@ -92,7 +93,7 @@ def generos(item):
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
     data = scrapertools.find_single_match(data,'<div class="section genre">(.*?)</div>')
@@ -142,16 +143,16 @@ def buscar(item):
     headers.append(["Referer",item.extra])
     headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     json_object = jsontools.load_json(data)
-    logger.info("html="+json_object["html"])
+    if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
 
-    return parse_mixed_results(item,data,False)
+    return parse_mixed_results(item,data)
 
-def parse_mixed_results(item,data,sort):
+def parse_mixed_results(item,data):
     patron  = '<a class="defaultLink extended" href="([^"]+)"[^<]+'
     patron += '<div class="coverMini shadow tiptip" title="([^"]+)"[^<]+'
     patron += '<img class="centeredPic.*?src="([^"]+)"'
@@ -160,8 +161,7 @@ def parse_mixed_results(item,data,sort):
     patron += '<span class="value"><i class="icon-star"></i>([^<]+)</span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    itemsort = []
-    
+
     for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedyear,scrapedvalue in matches:
         title = scrapertools.htmlclean(scrapedtitle)
         if scrapedyear != '':
@@ -177,31 +177,24 @@ def parse_mixed_results(item,data,sort):
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/peli/","/links/view/slug/")+"/what/peli"
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            if sort:
-                itemsort.append({'action': "findvideos", 'title': title, 'extra': referer, 'url': url, 'thumbnail': thumbnail, 'plot': plot, 'fulltitle': title})
-            else:
-                itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
-            if sort:
-                itemsort.append({'action': "episodios", 'title': title, 'extra': referer, 'url': url, 'thumbnail': thumbnail, 'plot': plot, 'fulltitle': title, 'show':title})
-            else:
-                itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
-
-    if sort:
-        itemsort = sorted(itemsort, key=lambda k: k['title'])
-        for subitem in itemsort:
-            show = subitem['title']
-            if subitem.has_key("show"):
-                show = subitem['show']
-            itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , extra=subitem['extra'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , fulltitle=subitem['fulltitle'] , show=show , viewmode="movie"))
+            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
 
     if "offset/" in item.url:
         old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
         new_offset = int(old_offset)+30
         url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
         itemlist.append( Item(channel=__channel__, action="lista" , title=">> Página siguiente" , extra=item.extra, url=url))
+
+    try:
+        import xbmcplugin
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
+    except:
+        pass
 
     return itemlist
 
@@ -213,11 +206,11 @@ def siguientes(item):
     headers.append(["Referer",item.extra])
     headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     json_object = jsontools.load_json(data)
-    logger.info("html2="+json_object["html"])
+    if (DEBUG): logger.info("html2="+json_object["html"])
     data = json_object["html"]
     patron = ''
     patron += '<div class="coverMini shadow tiptip" title="([^"]+)">[^<]+'
@@ -250,21 +243,15 @@ def siguientes(item):
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-    #http://www.pordede.com/pelis/loadmedia/offset/30/showlist/hot?popup=1
-    if "offset" in item.url:
-        old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
-        new_offset = int(old_offset)+30
-        url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=">> Página siguiente" , extra=item.extra, url=url))
-
     return itemlist
+
 def episodio(item):
     logger.info("pelisalacarta.channels.pordede episodio")
     itemlist = []
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     session = str(int(item.extra.split("|")[0]))
     episode = str(int(item.extra.split("|")[1]))
@@ -272,7 +259,7 @@ def episodio(item):
     matchestemporadas = re.compile(patrontemporada,re.DOTALL).findall(data)
 
     for bloque_episodios in matchestemporadas:
-        logger.info("bloque_episodios="+bloque_episodios)
+        if (DEBUG): logger.info("bloque_episodios="+bloque_episodios)
 
         # Extrae los episodios
         patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">'+episode+' </span>([^<]+)</span>(\s*</div>\s*<span[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></span><div[^>]*><button[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></button><div class="action([^"]*)" data-action="seen">)?'
@@ -296,6 +283,7 @@ def episodio(item):
     for capitulo in itemlist:
         itemlist2 = findvideos(capitulo)
     return itemlist2
+
 def peliculas(item):
     logger.info("pelisalacarta.channels.pordede peliculas")
 
@@ -304,51 +292,14 @@ def peliculas(item):
     headers.append(["Referer",item.extra])
     headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     json_object = jsontools.load_json(data)
-    logger.info("html="+json_object["html"])
+    if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
 
-    patron  = '<a class="defaultLink extended" href="([^"]+)"[^<]+'
-    patron += '<div class="coverMini shadow tiptip" title="([^"]+)"[^<]+'
-    patron += '<img class="centeredPic.*?src="([^"]+)"'
-    patron += '[^<]+<img[^<]+<div class="extra-info">'
-    patron += '<span class="year">([^<]+)</span>'
-    patron += '<span class="value"><i class="icon-star"></i>([^<]+)</span>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    itemlist = []
-    
-    for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedyear,scrapedvalue in matches:
-        title = scrapertools.htmlclean(scrapedtitle)
-        if scrapedyear != '':
-            title += " ("+scrapedyear+")"
-        if scrapedvalue != '':
-            title += " ("+scrapedvalue+")"
-        thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
-        plot = ""
-        #http://www.pordede.com/peli/the-lego-movie
-        #http://www.pordede.com/links/view/slug/the-lego-movie/what/peli?popup=1
-
-        referer = urlparse.urljoin(item.url,scrapedurl)
-        if "/peli" in item.url:
-            url = referer.replace("/peli/","/links/view/slug/")+"/what/peli"
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
-        else:
-            url = referer
-            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
-
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-
-    #http://www.pordede.com/pelis/loadmedia/offset/30/showlist/hot?popup=1
-    if "offset" in item.url:
-        old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
-        new_offset = int(old_offset)+30
-        url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=">> Página siguiente" , extra=item.extra, url=url))
-
-    return itemlist
+    return parse_mixed_results(item,data)
 
 def episodios(item):
     logger.info("pelisalacarta.channels.pordede episodios")
@@ -356,14 +307,14 @@ def episodios(item):
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
-    #logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     patrontemporada = '<div class="checkSeason"[^>]+>([^<]+)<div class="right" onclick="controller.checkSeason(.*?)\s+</div></div>'
     matchestemporadas = re.compile(patrontemporada,re.DOTALL).findall(data)
 
     for nombre_temporada,bloque_episodios in matchestemporadas:
-        logger.info("nombre_temporada="+nombre_temporada)
-        logger.info("bloque_episodios="+bloque_episodios)
+        if (DEBUG): logger.info("nombre_temporada="+nombre_temporada)
+        if (DEBUG): logger.info("bloque_episodios="+bloque_episodios)
 
         # Extrae los episodios
         patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">([^<]+)</span>([^<]+)</span>(\s*</div>\s*<span[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></span><div[^>]*><button[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></button><div class="action([^"]*)" data-action="seen">)?'
@@ -387,55 +338,58 @@ def episodios(item):
         itemlist.append( Item(channel='pordede', title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios###", show=item.show) )
         itemlist.append( Item(channel='pordede', title="Descargar todos los episodios de la serie", url=item.url, action="download_all_episodes", extra="episodios", show=item.show))
 
+    return itemlist
+
+def parse_listas(item, patron):
+    logger.info("pelisalacarta.channels.pordede parse_listas")
+
+    # Descarga la pagina
+    headers = DEFAULT_HEADERS[:]
+    headers.append(["Referer",item.extra])
+    headers.append(["X-Requested-With","XMLHttpRequest"])
+    data = scrapertools.cache_page(item.url,headers=headers)
+    if (DEBUG): logger.info("data="+data)
+
+    # Extrae las entradas (carpetas)  
+    json_object = jsontools.load_json(data)
+    if (DEBUG): logger.info("html="+json_object["html"])
+    data = json_object["html"]
+
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    itemlist = []
+    
+    for scrapedurl,scrapedtitle,scrapeduser,scrapedfichas in matches:
+        title = scrapertools.htmlclean(scrapedtitle + ' (' + scrapedfichas + ' fichas, por ' + scrapeduser + ')')
+        url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
+        thumbnail = ""
+        itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
+        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
+    nextpage = scrapertools.find_single_match(data,'data-url="(/lists/loadlists/offset/[^"]+)"')
+    if nextpage != '':
+        url = urlparse.urljoin(item.url,nextpage)
+        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title=">> Página siguiente" , extra=item.extra, url=url))
+
+    try:
+        import xbmcplugin
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
+        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
+    except:
+        pass
 
     return itemlist
 
 def listas_sigues(item):
     logger.info("pelisalacarta.channels.pordede listas_sigues")
 
-    # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
-
-    # Extrae las entradas (carpetas)  
-    json_object = jsontools.load_json(data)
-    logger.info("html="+json_object["html"])
-    data = json_object["html"]
-
     patron  = '<div class="clearfix modelContainer" data-model="lista"[^<]+'
     patron += '<span class="title"><span class="name"><a class="defaultLink" href="([^"]+)">([^<]+)</a>'
+    patron += '</span>[^<]+<a[^>]+>([^<]+)</a></span>\s+<div[^<]+<div[^<]+</div>\s+<div class="info">\s+<p>([0-9]+)'
 
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    itemlist = []
-    
-    for scrapedurl,scrapedtitle in matches:
-        title = scrapertools.htmlclean(scrapedtitle)
-        url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
-        thumbnail = ""
-        plot = ""
-        itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
-
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-
-    return itemlist
+    return parse_listas(item, patron)
 
 def tus_listas(item):
     logger.info("pelisalacarta.channels.pordede tus_listas")
-
-    # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
-
-    # Extrae las entradas (carpetas)  
-    json_object = jsontools.load_json(data)
-    logger.info("html="+json_object["html"])
-    data = json_object["html"]
 
     patron  = '<div class="clearfix modelContainer" data-model="lista"[^<]+'
     patron += '<div class="right"[^<]+'
@@ -443,28 +397,9 @@ def tus_listas(item):
     patron += '<button[^<]+</button[^<]+'
     patron += '</div[^<]+'
     patron += '<span class="title"><span class="name"><a class="defaultLink" href="([^"]+)">([^<]+)</a>'
+    patron += '</span>[^<]+<a[^>]+>([^<]+)</a></span>\s+<div[^<]+<div[^<]+</div>\s+<div class="info">\s+<p>([0-9]+)'
 
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    itemlist = []
-    itemsort = []
-    
-    for scrapedurl,scrapedtitle in matches:
-        title = scrapertools.htmlclean(scrapedtitle)
-        url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
-        thumbnail = ""
-        plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        if (config.get_setting("pordedesortlist")=='true'):
-            itemsort.append({'title': title, 'url' : url})
-        else:
-            itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
-
-    if (config.get_setting("pordedesortlist")=='true'):
-        itemsort = sorted(itemsort, key=lambda k: k['title'])
-        for item in itemsort:
-            itemlist.append( Item(channel=__channel__, action="lista" , title=item['title'] , url=item['url']))
-
-    return itemlist
+    return parse_listas(item, patron)
 
 def lista(item):
     logger.info("pelisalacarta.channels.pordede lista")
@@ -474,14 +409,14 @@ def lista(item):
     headers.append(["Referer",item.extra])
     headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     json_object = jsontools.load_json(data)
-    logger.info("html="+json_object["html"])
+    if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
 
-    return parse_mixed_results(item,data,(config.get_setting("pordedesortlist")=='true'))
+    return parse_mixed_results(item,data)
 
 def findvideos(item, verTodos=False):
     logger.info("pelisalacarta.channels.pordede findvideos")
@@ -491,24 +426,22 @@ def findvideos(item, verTodos=False):
     #headers.append(["Referer",item.extra])
     #headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
-    #logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)  
     #json_object = jsontools.load_json(data)
-    #logger.info("html="+json_object["html"])
+    #if (DEBUG): logger.info("html="+json_object["html"])
     #data = json_object["html"]
 
-
     sesion = scrapertools.find_single_match(data,'SESS = "([^"]+)";')
-    logger.info("sesion="+sesion)
+    if (DEBUG): logger.info("sesion="+sesion)
 
     patron  = '<a target="_blank" class="a aporteLink(.*?)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
 
-    if "/what/peli" in item.url:
-        url_aux = item.url.replace("/links/view/slug/", "/peli/").replace("/what/peli", "")
-        itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=url_aux, thumbnail=item.thumbnail,  folder=False ))
+    if config.get_platform().startswith("xbmc") and "/what/peli" in item.url:
+        itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=item.url, thumbnail=item.thumbnail,  folder=False ))
 
     itemsort = []
     sortlinks = config.get_setting("pordedesortlinks") # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
@@ -517,7 +450,7 @@ def findvideos(item, verTodos=False):
     showlinks = int(showlinks) if showlinks != '' else 0
 
     for match in matches:
-        logger.info("match="+match)
+        if (DEBUG): logger.info("match="+match)
 
         jdown = scrapertools.find_single_match(match,'<div class="jdownloader">[^<]+</div>')
         if (showlinks == 1 and jdown != '') or (showlinks == 2 and jdown == ''): # Descartar enlaces veronline/descargar
@@ -533,15 +466,14 @@ def findvideos(item, verTodos=False):
             idioma = idioma_0
 
         calidad_video = scrapertools.find_single_match(match,'<div class="linkInfo quality"><i class="icon-facetime-video"></i>([^<]+)</div>')
-        logger.info("calidad_video="+calidad_video)
+        if (DEBUG): logger.info("calidad_video="+calidad_video)
         calidad_audio = scrapertools.find_single_match(match,'<div class="linkInfo qualityaudio"><i class="icon-headphones"></i>([^<]+)</div>')
-        logger.info("calidad_audio="+calidad_audio)
-
+        if (DEBUG): logger.info("calidad_audio="+calidad_audio)
 
         thumb_servidor = scrapertools.find_single_match(match,'<div class="hostimage"[^<]+<img\s*src="([^"]+)">')
-        logger.info("thumb_servidor="+thumb_servidor)
+        if (DEBUG): logger.info("thumb_servidor="+thumb_servidor)
         nombre_servidor = scrapertools.find_single_match(thumb_servidor,"popup_([^\.]+)\.png")
-        logger.info("nombre_servidor="+nombre_servidor)
+        if (DEBUG): logger.info("nombre_servidor="+nombre_servidor)
         
         title = ("Download " if jdown != '' else "Ver en ")+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
 
@@ -594,7 +526,7 @@ def findvideos(item, verTodos=False):
     return itemlist
 
 def findallvideos(item):
-    return findvideos(item,True)
+    return findvideos(item, True)
 
 def play(item):
     logger.info("pelisalacarta.channels.pordede play url="+item.url)
@@ -607,7 +539,7 @@ def play(item):
     headers.append( ["Referer" , item.extra.split("|")[1] ])
 
     data = scrapertools.cache_page(item.url,post="_s="+item.extra.split("|")[0],headers=headers)
-    logger.info("data="+data)
+    if (DEBUG): logger.info("data="+data)
     #url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
     url = scrapertools.find_single_match(data,'<p class="links">\s+<a href="([^"]+)" target="_blank"')
     url = urlparse.urljoin(item.url,url)
@@ -619,7 +551,6 @@ def play(item):
     logger.info("data2="+data2)
     url2 = scrapertools.find_single_match(data2,'<a href="([^"]+)"><button disabled>Ir al vídeo</button>')
     url2 = urlparse.urljoin(item.url,url2)
-    
     headers = DEFAULT_HEADERS[:]
     headers.append( ["Referer" , url2 ])
 
@@ -637,7 +568,6 @@ def play(item):
     return itemlist    
 
 def checkseen(item):
-
     logger.info("pelisalacarta.channels.pordede checkseen "+item)
 
     if "/viewepisode/" in item:
@@ -657,12 +587,13 @@ def checkseen(item):
 def infosinopsis(item):
     logger.info("pelisalacarta.channels.pordede infosinopsis")
 
+    url_aux = item.url.replace("/links/view/slug/", "/peli/").replace("/what/peli", "")
     # Descarga la pagina
     headers = DEFAULT_HEADERS[:]
     #headers.append(["Referer",item.extra])
     #headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
-    #logger.info("data="+data)
+    data = scrapertools.cache_page(url_aux,headers=headers)
+    if (DEBUG): logger.info("data="+data)
 
     scrapedtitle = scrapertools.find_single_match(data,'<h1>([^<]+)</h1>')
     scrapedvalue = scrapertools.find_single_match(data,'<span class="puntuationValue" data-value="([^"]+)"')
@@ -689,31 +620,34 @@ def infosinopsis(item):
     del tbd
     return
 
-import xbmcgui
-class TextBox( xbmcgui.WindowXML ):
-    """ Create a skinned textbox window """
-    def __init__( self, *args, **kwargs):
-        pass
-        
-    def onInit( self ):
-        try:
-            self.getControl( 5 ).setText( self.text )
-            self.getControl( 1 ).setLabel( self.title )
-        except: pass
-
-    def onClick( self, controlId ):
-        pass
-
-    def onFocus( self, controlId ):
-        pass
-
-    def onAction( self, action ):
-        self.close()
-
-    def ask(self, title, text ):
-        self.title = title
-        self.text = text
-        self.doModal()
+try:
+    import xbmcgui
+    class TextBox( xbmcgui.WindowXML ):
+        """ Create a skinned textbox window """
+        def __init__( self, *args, **kwargs):
+            pass
+            
+        def onInit( self ):
+            try:
+                self.getControl( 5 ).setText( self.text )
+                self.getControl( 1 ).setLabel( self.title )
+            except: pass
+    
+        def onClick( self, controlId ):
+            pass
+    
+        def onFocus( self, controlId ):
+            pass
+    
+        def onAction( self, action ):
+            self.close()
+    
+        def ask(self, title, text ):
+            self.title = title
+            self.text = text
+            self.doModal()
+except:
+    pass
 
 # Valoraciones de enlaces, los valores más altos se mostrarán primero :
 
