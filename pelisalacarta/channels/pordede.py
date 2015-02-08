@@ -547,14 +547,15 @@ def play(item):
     headers = DEFAULT_HEADERS[:]
     headers.append( ["Referer" , item.url ])
 
-    data2 = scrapertools.cache_page(url,headers=headers)
-    logger.info("data2="+data2)
-    url2 = scrapertools.find_single_match(data2,'<a href="([^"]+)"><button disabled>Ir al vídeo</button>')
-    url2 = urlparse.urljoin(item.url,url2)
-    headers = DEFAULT_HEADERS[:]
-    headers.append( ["Referer" , url2 ])
+    #data2 = scrapertools.cache_page(url,headers=headers)
+    #logger.info("pelisalacarta.channels.pordede play (interstitial) url="+url)
+    #logger.info("data2="+data2)
+    #url2 = scrapertools.find_single_match(data2,'<a href="([^"]+)"><button disabled>Ir al vídeo</button>')
+    #url2 = urlparse.urljoin(item.url,url2)
+    #headers = DEFAULT_HEADERS[:]
+    #headers.append( ["Referer" , url2 ])
 
-    media_url = scrapertools.downloadpage(url2,headers=headers,header_to_get="location",follow_redirects=False)
+    media_url = scrapertools.downloadpage(url,headers=headers,header_to_get="location",follow_redirects=False)
     logger.info("media_url="+media_url)
 
     itemlist = servertools.find_video_items(data=media_url)
