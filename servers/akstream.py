@@ -50,17 +50,15 @@ def find_videos(text):
     encontrados = set()
     devuelve = []
 
-    
-	
 	#http://akstream.net/v/iwbe6genso37
-    patronvideos  = 'http://akstream.net/v/([A-Z0-9]+)'
+    patronvideos  = 'http://akstream.net/v/([a-z0-9]+)'
     logger.info("[akstream.py] find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(text)
 
     for match in matches:
         titulo = "[Akstream]"
         url = "http://akstream.net/v/"+match
-        if url not in encontrados and id != "":
+        if url not in encontrados:
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'akstream' ] )
             encontrados.add(url)

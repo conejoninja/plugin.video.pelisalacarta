@@ -19,7 +19,7 @@ __category__ = "F,S,A"
 __type__ = "generic"
 __title__ = "Cineblog01 (IT)"
 __language__ = "IT"
-sito="http://www.cb01.tv"
+sito="http://www.cb01.org"
 
 DEBUG = config.get_setting("debug")
 
@@ -124,10 +124,10 @@ def search(item,texto):
     try:
 
         if item.extra=="serie":
-            item.url = "http://www.cb01.tv/serietv/?s="+texto
+            item.url = "http://www.cb01.org/serietv/?s="+texto
             return listserie(item)
         else:
-            item.url = "http://www.cb01.tv/?s="+texto
+            item.url = "http://www.cb01.org/?s="+texto
             return peliculas(item)
 
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
@@ -164,7 +164,7 @@ def listcat(item):
         itemlist.append( Item(channel=__channel__, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot))
 
     # Remove the next page mark
-    patronvideos = '<a href="(http://www.cb01.tv/category/[0-9a-zA-Z]+/page/[0-9]+/)">Avanti >'
+    patronvideos = '<a href="(http://www.cb01.org/category/[0-9a-zA-Z]+/page/[0-9]+/)">Avanti >'
     patronvideos += '/page/[0-9]+/)">Avanti >'
     matches = re.compile (patronvideos, re.DOTALL).findall (data)
     scrapertools.printMatches (matches)

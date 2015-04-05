@@ -80,14 +80,19 @@
     <setting id="quebajamospassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
 
     <setting type="sep" />
-    <setting id="zampaseriesaccount" type="bool" label="zampaseries" default="false"/>
-    <setting id="zampaseriesuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
-    <setting id="zampaseriespassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
-
-    <setting type="sep" />
     <setting id="playmaxaccount" type="bool" label="playmax" default="false"/>
     <setting id="playmaxuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
     <setting id="playmaxpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="seriesmuaccount" type="bool" label="seriesmu" default="false"/>
+    <setting id="seriesmuuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
+    <setting id="seriesmupassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+
+    <setting type="sep" />
+    <setting id="torrentestrenosaccount" type="bool" label="torrentestrenos" default="false"/>
+    <setting id="torrentestrenosuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
+    <setting id="torrentestrenospassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
 
     <setting id="jdownloader_enabled" type="bool" label="JDownloader" default="false"/>
     <setting id="jdownloader" type="text" label="URL" default="http://127.0.0.1:10025"/>

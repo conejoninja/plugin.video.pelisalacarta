@@ -28,8 +28,7 @@ def isGeneric():
 def mainlist(item):
     logger.info("[gnula.py] mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Novità" , action="peliculas", url="http://www.italiafilms.tv/"))
-    itemlist.append( Item(channel=__channel__, title="Categorie" , action="categorias", url="http://www.italiafilms.tv/"))
+    itemlist.append( Item(channel=__channel__, title="Categorie" , action="categorias", url="http://www.italia-film.org/film-in-streaming/"))
     itemlist.append( Item(channel=__channel__, title="Cerca Film", action="search"))
     return itemlist
 
@@ -50,7 +49,7 @@ def categorias(item):
     <li id="menu-item-21092" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-21092"><a href="http://www.italiafilms.tv/category/film-animazione/">Film Animazione</a></li>
     '''
 
-    data = scrapertools.find_single_match(data,'<a href=".">Categorie</a>(.*?)</ul>')
+    data = scrapertools.find_single_match(data,'<a href=".">Categorie</a>(.*?)</div>')
     patron = '<li class="[^"]+"><a href="([^"]+)">([^<]+)</a></li>'
 
     patron = '<li[^>]+><a href="([^"]+)">([^<]+)</a></li>'

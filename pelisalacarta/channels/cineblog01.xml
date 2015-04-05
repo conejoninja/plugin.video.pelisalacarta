@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <version>
 	<name>cineblog01</name>
-	<tag>11</tag>
-	<date>14/09/2012</date>
-	<changes>URL changed for avoiding connection refused issues</changes>
+	<tag>12</tag>
+	<date>16/03/2015</date>
+	<changes>URL changed</changes>
 </version>

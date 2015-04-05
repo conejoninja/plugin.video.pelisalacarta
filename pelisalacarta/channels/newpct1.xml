@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <version>
 	<name>newpct1</name>
-	<tag>2</tag>
-	<date>11/11/2014</date>
-	<changes>Arreglos en findvideos</changes>
+	<tag>7</tag>
+	<date>10/03/15</date>
+	<changes>Corregido BUG (lista vacia) en Buscar...</changes>
 </version>

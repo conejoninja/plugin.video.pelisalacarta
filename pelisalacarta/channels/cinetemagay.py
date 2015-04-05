@@ -35,9 +35,7 @@ def mainlist(item):
     logger.info("[cinetemagay.py] mainlist")
 
     itemlist = []
-    
-    itemlist.append( Item(channel=__channel__, action="lista"  , title="Cine gay online" , url="http://cinegayonline.blogspot.com.es//feeds/posts/default/?max-results=100&start-index=1",thumbnail="http://4.bp.blogspot.com/-jX_4yJbTpYw/T5GQHb5TgzI/AAAAAAAAAOE/GM4IHqBygb4/s938/cg2.jpg"))
-    itemlist.append( Item(channel=__channel__, action="lista"  , title="Latin Queer Channel" , url="http://latinqueerchannel.blogspot.com/feeds/posts/default/?max-results=100&start-index=1",thumbnail="http://3.bp.blogspot.com/-r8c6teBc_3I/TbmJiNtv0UI/AAAAAAAAC-0/KrthDgHEebM/banner-latin1.jpg"))
+    itemlist.append( Item(channel=__channel__, action="lista"  , title="New latin queer channel" , url="http://newlatinqueerchannel.blogspot.com.es/feeds/posts/default/?max-results=100&start-index=1",thumbnail="http://2.bp.blogspot.com/-UmC0SWRlQbk/Uuc7G66FmMI/AAAAAAAADbg/fc2MIkJJBlw/s1600/banner%2Bnewlqch.png"))         
     itemlist.append( Item(channel=__channel__, action="lista"  , title="Modo gay" , url="http://www.modogay.com/feeds/posts/default/?max-results=100&start-index=1",thumbnail="http://4.bp.blogspot.com/--oGFfDhcJg8/T4iGRMsNFOI/AAAAAAAABV4/oXKs9PMbrYU/s1600/mgbanner2.jpg"))         
     itemlist.append( Item(channel=__channel__, action="lista"  , title="Cine gay online (México)" , url="http://cinegayonlinemexico.blogspot.com.es/feeds/posts/default/?max-results=100&start-index=1",thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmmqL6tS2Ced1VoxlGQT0q-ibPEz1DCV3E1waHFDI5KT0pg1lJ"))               
     itemlist.append( Item(channel=__channel__, action="lista"  , title="Myquerchannel" , url="http://myqueerchannel.blogspot.com.es//feeds/posts/default/?max-results=100&start-index=1",thumbnail="http://1.bp.blogspot.com/-FKkBi7VyE-U/Tz7Le9vtQ5I/AAAAAAAAAd4/OXjxaycEPb8/s1600/myqueer.jpg"))               

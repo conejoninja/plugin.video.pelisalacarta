@@ -36,9 +36,50 @@ def mainlist(item):
     itemlist.append( Item(channel=__channel__ , action="bloque", title="Novedades castellano" , url="http://www.adsctx.net/castellano.html", extra="Nuevo Castellano", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" ))
     itemlist.append( Item(channel=__channel__ , action="bloque", title="Nueva calidad disponible" , url="http://www.adsctx.net/calidad.html", extra="Nueva Calidad", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" ))
     itemlist.append( Item(channel=__channel__ , action="generos", title="Por géneros" , url="http://www.cinetux.org/", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" ))
+    itemlist.append( Item(channel=__channel__ , action="search"        , title="Buscar"              , url="http://www.cinetux.org/?s=" ))
 
     return itemlist
+    
+def search(item,texto):
+    logger.info("[cinetux.py] search")
+    if item.url=="":
+        item.url="http://www.cinetux.org/?s="
+    texto = texto.replace(" ","+")
+    item.url = item.url+texto
+    try:
+        return busqueda(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
+        
+def busqueda(item):
+    logger.info("[cinetux.py] bloque")
+    itemlist = []
 
+    # Descarga la página
+    data = scrapertools.cachePage(item.url)
+    #data = scrapertools.get_match(data,item.extra+'</h6>(.*?)</div>')
+    
+    #<a target="_blank" href="http://www.cinetux.org/2013/04/ver-pelicula-dark-skies-online-gratis-2013.html"><img style="border:1px solid #FDC101;" src="http://4.bp.blogspot.com/-UlKHsLS3Tsk/URJotTqg-_I/AAAAAAAAA5c/8lhe3kY4jzc/s80/Dark+Skies+%282013%29+Movie+Review.jpg" height="75" width="47">
+    patron ='<td class="contenido"><a href="([^"]+)"><img src="([^"]+)" style="padding: 5px;" alt="[^"]+" title="([^"]+)" height="200" align="left" border="0" width="140"></a>'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    scrapertools.printMatches(matches)
+
+    for scrapedurl,scrapedthumbnail, scrapedtitle in matches:
+        scrapedplot = ""
+        
+        parsed_url = urlparse.urlparse(scrapedurl)
+        scrapedtitle = scrapedtitle.replace("Ver Película","")
+        scrapedtitle = scrapedtitle.replace("Online Gratis","")
+
+        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=True) )
+
+    return itemlist
+       
 def peliculas(item):
     logger.info("[cinetux.py] peliculas")
     itemlist = []
@@ -247,7 +288,7 @@ def findvideos(item):
         url = scrapedlink
         thumbnail = item.thumbnail
         plot = ""
-        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle+" ["+scrapedlanguage+"]["+scrapedquality+"]", url=url , thumbnail=thumbnail , plot=plot , fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=False) )
+        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle, url=url , thumbnail=thumbnail , plot=plot , fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=False) )
 
     patron  = '<tr class="tabletr">[^<]+'
     patron += '<td class="episode-server[^>]+><img[^>]+>([^>]+)</td>[^<]+'

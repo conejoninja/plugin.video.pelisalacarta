@@ -77,12 +77,21 @@ def checkforupdates():
     logger.info("[updater.py] Verificando actualizaciones...")
     logger.info("[updater.py] Version remota: "+REMOTE_VERSION_FILE)
     data = scrapertools.cachePage( REMOTE_VERSION_FILE )
-    #logger.info("xml descargado="+data)
-    patronvideos  = '<tag>([^<]+)</tag>'
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
-    #scrapertools.printMatches(matches)
-    versiondescargada = matches[0]
-    logger.info("[updater.py] version descargada="+versiondescargada)
+
+    '''    
+    <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+    <version>
+            <name>pelisalacarta</name>
+            <tag>4.0     </tag>
+            <version>4000</tag>
+            <date>20/03/2015</date>
+            <changes>New release</changes>
+    </version>
+    '''
+
+    version_publicada = scrapertools.find_single_match(data,"<version>([^<]+)</version>").strip()
+    tag_publicada = scrapertools.find_single_match(data,"<tag>([^<]+)</tag>").strip()
+    logger.info("[updater.py] version descargada="+tag_publicada+" "+version_publicada)
     
     # Lee el fichero con la versión instalada
     localFileName = LOCAL_VERSION_FILE
@@ -91,48 +100,58 @@ def checkforupdates():
     data = infile.read()
     infile.close();
     #logger.info("xml local="+data)
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
-    #scrapertools.printMatches(matches)
-    versionlocal = matches[0]
-    logger.info("[updater.py] version local="+versionlocal)
 
-    arraydescargada = versiondescargada.split(".")
-    arraylocal = versionlocal.split(".")
-    
-    # local 2.8.0 - descargada 2.8.0 -> no descargar
-    # local 2.9.0 - descargada 2.8.0 -> no descargar
-    # local 2.8.0 - descargada 2.9.0 -> descargar
-    if len(arraylocal) == len(arraydescargada):
-        #logger.info("caso 1")
-        hayqueactualizar = False
-        for i in range(0, len(arraylocal)):
-            #print arraylocal[i], arraydescargada[i], int(arraydescargada[i]) > int(arraylocal[i])
-            if int(arraydescargada[i]) > int(arraylocal[i]):
-                hayqueactualizar = True
-    # local 2.8.0 - descargada 2.8 -> no descargar
-    # local 2.9.0 - descargada 2.8 -> no descargar
-    # local 2.8.0 - descargada 2.9 -> descargar
-    if len(arraylocal) > len(arraydescargada):
-        #logger.info("caso 2")
-        hayqueactualizar = False
-        for i in range(0, len(arraydescargada)):
-            #print arraylocal[i], arraydescargada[i], int(arraydescargada[i]) > int(arraylocal[i])
-            if int(arraydescargada[i]) > int(arraylocal[i]):
-                hayqueactualizar = True
-    # local 2.8 - descargada 2.8.8 -> descargar
-    # local 2.9 - descargada 2.8.8 -> no descargar
-    # local 2.10 - descargada 2.9.9 -> no descargar
-    # local 2.5 - descargada 3.0.0
-    if len(arraylocal) < len(arraydescargada):
-        #logger.info("caso 3")
-        hayqueactualizar = True
-        for i in range(0, len(arraylocal)):
-            #print arraylocal[i], arraydescargada[i], int(arraylocal[i])>int(arraydescargada[i])
-            if int(arraylocal[i]) > int(arraydescargada[i]):
-                hayqueactualizar =  False
-            elif int(arraylocal[i]) < int(arraydescargada[i]):
-                hayqueactualizar =  True
-                break
+    version_local = scrapertools.find_single_match(data,"<version>([^<]+)</version>").strip()
+    tag_local = scrapertools.find_single_match(data,"<tag>([^<]+)</tag>").strip()
+    logger.info("[updater.py] version local="+tag_local+" "+version_local)
+
+    try:
+        numero_version_publicada = int(version_publicada)
+        numero_version_local = int(version_local)
+    except:
+        version_publicada = ""
+        version_local = ""
+
+    if version_publicada=="" or version_local=="":
+        arraydescargada = tag_publicada.split(".")
+        arraylocal = tag_local.split(".")
+
+        # local 2.8.0 - descargada 2.8.0 -> no descargar
+        # local 2.9.0 - descargada 2.8.0 -> no descargar
+        # local 2.8.0 - descargada 2.9.0 -> descargar
+        if len(arraylocal) == len(arraydescargada):
+            logger.info("caso 1")
+            hayqueactualizar = False
+            for i in range(0, len(arraylocal)):
+                print arraylocal[i], arraydescargada[i], int(arraydescargada[i]) > int(arraylocal[i])
+                if int(arraydescargada[i]) > int(arraylocal[i]):
+                    hayqueactualizar = True
+        # local 2.8.0 - descargada 2.8 -> no descargar
+        # local 2.9.0 - descargada 2.8 -> no descargar
+        # local 2.8.0 - descargada 2.9 -> descargar
+        if len(arraylocal) > len(arraydescargada):
+            #logger.info("caso 2")
+            hayqueactualizar = False
+            for i in range(0, len(arraydescargada)):
+                #print arraylocal[i], arraydescargada[i], int(arraydescargada[i]) > int(arraylocal[i])
+                if int(arraydescargada[i]) > int(arraylocal[i]):
+                    hayqueactualizar = True
+        # local 2.8 - descargada 2.8.8 -> descargar
+        # local 2.9 - descargada 2.8.8 -> no descargar
+        # local 2.10 - descargada 2.9.9 -> no descargar
+        # local 2.5 - descargada 3.0.0
+        if len(arraylocal) < len(arraydescargada):
+            #logger.info("caso 3")
+            hayqueactualizar = True
+            for i in range(0, len(arraylocal)):
+                #print arraylocal[i], arraydescargada[i], int(arraylocal[i])>int(arraydescargada[i])
+                if int(arraylocal[i]) > int(arraydescargada[i]):
+                    hayqueactualizar =  False
+                elif int(arraylocal[i]) < int(arraydescargada[i]):
+                    hayqueactualizar =  True
+                    break
+    else:
+        hayqueactualizar = (numero_version_publicada > version_local)
 
     if (hayqueactualizar):
         logger.info("[updater.py] actualizacion disponible")
@@ -141,14 +160,14 @@ def checkforupdates():
         import xbmcgui
         thumbnail = IMAGES_PATH+"Crystal_Clear_action_info.png"
         logger.info("thumbnail="+thumbnail)
-        listitem = xbmcgui.ListItem( "Descargar version "+versiondescargada, thumbnailImage=thumbnail )
-        itemurl = '%s?action=update&version=%s' % ( sys.argv[ 0 ] , versiondescargada )
+        listitem = xbmcgui.ListItem( "Descargar version "+tag_publicada, thumbnailImage=thumbnail )
+        itemurl = '%s?action=update&version=%s' % ( sys.argv[ 0 ] , tag_publicada )
         import xbmcplugin
         xbmcplugin.addDirectoryItem( handle = int(sys.argv[ 1 ]), url = itemurl , listitem=listitem, isFolder=True)
         
         # Avisa con un popup
         dialog = xbmcgui.Dialog()
-        dialog.ok("Versión "+versiondescargada+" disponible","Ya puedes descargar la nueva versión del plugin\ndesde el listado principal")
+        dialog.ok("Versión "+tag_publicada+" disponible","Ya puedes descargar la nueva versión del plugin\ndesde el listado principal")
 
     '''
     except:

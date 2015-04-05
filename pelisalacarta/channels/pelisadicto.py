@@ -6,7 +6,6 @@
 #------------------------------------------------------------
 import urlparse,urllib2,urllib,re
 import os, sys
-import xbmc, xbmcgui
 
 from core import logger
 from core import config
@@ -26,16 +25,18 @@ def isGeneric():
     return True
 
 def mainlist(item):
-    logger.info("[cuevana.py] mainlist")
+    logger.info("[pelisadicto.py] mainlist")
 
     itemlist = []
     itemlist.append( Item(channel=__channel__, title="Últimas agregadas"  , action="agregadas", url="http://pelisadicto.com"))
     itemlist.append( Item(channel=__channel__, title="Listado por género" , action="porGenero", url="http://pelisadicto.com"))
-    itemlist.append( Item(channel=__channel__, title="Buscar" , action="buscar", url="http://pelisadicto.com") )
+    itemlist.append( Item(channel=__channel__, title="Buscar" , action="search", url="http://pelisadicto.com") )
     
     return itemlist
 
 def porGenero(item):
+    logger.info("[pelisadicto.py] porGenero")
+
     itemlist = []
     itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Acción",url="http://pelisadicto.com/genero/Acción/1"))
     itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Adulto",url="http://pelisadicto.com/genero/Adulto/1"))
@@ -64,42 +65,90 @@ def porGenero(item):
 
     return itemlist	
 
+def search(item,texto):
+    logger.info("[pelisadicto.py] search")
+
+    '''
+    texto_get = texto.replace(" ","%20")
+    texto_post = texto.replace(" ","+")
+    item.url = "http://pelisadicto.com/buscar/%s?search=%s" % (texto_get,texto_post)
+    '''
+
+    texto_post = texto.replace(" ","+")
+    item.url = "http://pelisadicto.com/buscar/%s" % texto
+
+    try:
+        return agregadas(item)
+    # Se captura la excepci?n, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
+
+    return busqueda(item)
+
 def agregadas(item):
-    logger.info("[cuevana.py] novedades")
+    logger.info("[pelisadicto.py] agregadas")
     itemlist = []
-    
+    '''
     # Descarga la pagina
+    if "?search=" in item.url:
+        url_search = item.url.split("?search=")
+        data = scrapertools.cache_page(url_search[0], url_search[1])
+    else:
+        data = scrapertools.cache_page(item.url)
+    logger.info("data="+data)
+    '''
+
     data = scrapertools.cache_page(item.url)
-    #logger.info("data="+data)
+    logger.info("data="+data)
+
     # Extrae las entradas
-    patron  = '<li class="col-xs-6 col-sm-2 CALBR">.*?'
-    patron += '<a href="(.*?)".*?src="(.*?)".*?alt="(.*?)".*?calidad">(.*?)<.*?</li>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for url,thumbnail,tit,calidad in matches:
-        url="http://pelisadicto.com"+url
-        data = scrapertools.cache_page(url)
-        patron = "<!-- SINOPSIS -->.*?"
-        patron += "<h2>.*?</h2>.*?"
-        patron += "<p>(.*?)</p>"
-        matches = re.compile(patron,re.DOTALL).findall(data)
-        plot = matches[0]
-        thumbnail = "http://pelisadicto.com"+thumbnail
-        itemlist.append( Item(channel=__channel__, action="findvideos3", title=tit, fulltitle=tit , url=url , thumbnail=thumbnail , plot=plot , show=tit, viewmode="movie_with_plot") )
-    patron  = '<li class="active">.*?</li><li><span><a href="(.*?)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    if len(matches)>0:
-        parametro = matches[0]
-        patron = '<ul class="listitems">.*?<li><a href="(.*?)"'
-        matches = re.compile(patron,re.DOTALL).findall(data)
-        genero = matches[0]
-        genero = genero.replace("mejores-peliculas", "genero")
-        url = genero + "/" + parametro
-        itemlist.append( Item(channel=__channel__, action="agregadas", title="Página siguiente >>" , url=url) )
+    fichas = re.sub(r"\n|\s{2}","",scrapertools.get_match(data,'<ul class="thumbnails">(.*?)</ul>'))
+
+    #<li class="col-xs-6 col-sm-2 CALDVD"><a href="/pelicula/101-dalmatas" title="Ver 101 dÃ¡lmatas Online" class="thumbnail thumbnail-artist-grid"><img class="poster" style="width: 180px; height: 210px;" src="/img/peliculas/101-dalmatas.jpg" alt="101 dÃ¡lmatas"/><div class="calidad">DVD</div><div class="idiomas"><img src="/img/1.png"  height="20" width="30" /></div><div class="thumbnail-artist-grid-name-container-1"><div class="thumbnail-artist-grid-name-container-2"><span class="thumbnail-artist-grid-name">101 dÃ¡lmatas</span></div></div></a></li>
+
+    patron = 'href="([^"]+)".*?' # url
+    patron+= 'src="([^"]+)" '    # thumbnail
+    patron+= 'alt="([^"]+)'      # title
+
+    matches = re.compile(patron,re.DOTALL).findall(fichas)
+    for url,thumbnail,title in matches:
+        url=urlparse.urljoin(item.url,url)
+        thumbnail = urlparse.urljoin(url,thumbnail)
+
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail , show=title, viewmode="movie_with_plot") )
+
+    # Paginación
+    try:
+    
+        #<ul class="pagination"><li class="active"><span>1</span></li><li><span><a href="2">2</a></span></li><li><span><a href="3">3</a></span></li><li><span><a href="4">4</a></span></li><li><span><a href="5">5</a></span></li><li><span><a href="6">6</a></span></li></ul>
+
+        current_page_number = int(scrapertools.get_match(item.url,'/(\d+)$'))
+        item.url = re.sub(r"\d+$","%s",item.url)
+        next_page_number = current_page_number + 1
+        next_page = item.url % (next_page_number)
+        itemlist.append( Item(channel=__channel__, action="agregadas", title="Página siguiente >>" , url=next_page) )
+    except: pass
 
     return itemlist
 
-def findvideos3(item):
+def findvideos(item):
+    logger.info("[pelisadicto.py] findvideos")
+
     itemlist = []
+
+    data = re.sub(r"\n|\s{2}","",scrapertools.cache_page(item.url))
+
+    #<!-- SINOPSIS --> <h2>Sinopsis de 101 dÃ¡lmatas</h2> <p>Pongo y Perdita, los dÃ¡lmatas protagonistas, son una feliz pareja canina que vive rodeada de sus cachorros y con sus amos Roger y Anita. Pero su felicidad estÃ¡ amenazada. Cruella de Ville, una pÃ©rfida mujer que vive en una gran mansiÃ³n y adora los abrigos de pieles, se entera de que los protagonistas tienen quince cachorros dÃ¡lmatas. Entonces, la idea de secuestrarlos para hacerse un exclusivo abrigo de pieles se convierte en una obsesiÃ³n enfermiza. Para hacer realidad su sueÃ±o contrata a dos ladrones.</p>
+
+    patron = "<!-- SINOPSIS --> "
+    patron += "<h2>[^<]+</h2> "
+    patron += "<p>([^<]+)</p>"
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    plot = matches[0]
+
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
     patron = '<tr>.*?'
@@ -111,10 +160,12 @@ def findvideos3(item):
         if "/img/2.png" in scrapedidioma: idioma="Latino"
         if "/img/3.png" in scrapedidioma: idioma="Subtitulado"
         title = item.title + " ["+scrapedcalidad+"][" + idioma + "][" + scrapedserver + "]"
-        itemlist.append( Item(channel=__channel__, action="play", title=title, fulltitle=title , url=scrapedurl , thumbnail="" , plot="" , show = item.show) )
+
+        itemlist.append( Item(channel=__channel__, action="play", title=title, fulltitle=title , url=scrapedurl , thumbnail="" , plot=plot , show = item.show) )
     return itemlist	
-	
+
 def play(item):
+    logger.info("[pelisadicto.py] play")
 
     itemlist = servertools.find_video_items(data=item.url)
 
@@ -125,37 +176,3 @@ def play(item):
         videoitem.channel = __channel__
 
     return itemlist    
-
-def buscar(item):
-    itemlist = []
-    keyboard = xbmc.Keyboard()
-    keyboard.doModal()
-    busqueda=keyboard.getText()
-    # Descarga la pagina
-    data = scrapertools.cache_page("http://pelisadicto.com/buscar/" + busqueda)
-    #logger.info("data="+data)
-    # Extrae las entradas
-    patron  = '<li class="col-xs-6 col-sm-2 CALBR">.*?'
-    patron += '<a href="(.*?)".*?src="(.*?)".*?alt="(.*?)".*?calidad">(.*?)<.*?</li>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for url,thumbnail,tit,calidad in matches:
-        url="http://pelisadicto.com"+url
-        data = scrapertools.cache_page(url)
-        patron = "<!-- SINOPSIS -->.*?"
-        patron += "<h2>.*?</h2>.*?"
-        patron += "<p>(.*?)</p>"
-        matches = re.compile(patron,re.DOTALL).findall(data)
-        plot = matches[0]
-        thumbnail = "http://pelisadicto.com"+thumbnail
-        itemlist.append( Item(channel=__channel__, action="findvideos3", title=tit, fulltitle=tit , url=url , thumbnail=thumbnail , plot=plot , show=tit, viewmode="movie_with_plot") )
-    patron  = '<li class="active">.*?</li><li><span><a href="(.*?)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    if len(matches)>0:
-        parametro = matches[0]
-        patron = '<ul class="listitems">.*?<li><a href="(.*?)"'
-        matches = re.compile(patron,re.DOTALL).findall(data)
-        genero = matches[0]
-        genero = genero.replace("mejores-peliculas", "genero")
-        url = genero + "/" + parametro
-        itemlist.append( Item(channel=__channel__, action="agregadas", title="Página siguiente >>" , url=url) )
-    return itemlist

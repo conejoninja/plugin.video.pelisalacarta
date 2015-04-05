@@ -112,7 +112,7 @@ def find_videos(text):
         else:
             logger.info("  url duplicada="+url)
 	
-	#http://speedvideo.net/hs7djap7jwrw/Tekken.Kazuyas.Revenge.2014.iTALiAN.Subbed.DVDRiP.XViD.NeWZoNe.avi.html
+    #http://speedvideo.net/hs7djap7jwrw/Tekken.Kazuyas.Revenge.2014.iTALiAN.Subbed.DVDRiP.XViD.NeWZoNe.avi.html
     patronvideos  = 'speedvideo.net/([A-Z0-9a-z]+)'
     logger.info("[speedvideo.py] find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(text)
@@ -126,7 +126,6 @@ def find_videos(text):
             encontrados.add(url)
         else:
             logger.info("  url duplicada="+url)
-
 
 #Cineblog by be4t5
     patronvideos  = 'cineblog01.../HR/go.php\?id\=([0-9]+)'

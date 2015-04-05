@@ -45,7 +45,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
         submitbutton = scrapertools.get_match(data,'<input type="submit" name="imhuman" value="([^"]+)"').replace(" ","+")
 
         import time
-        time.sleep(5)
+        time.sleep(30)
 
         # Lo pide una segunda vez, como si hubieras hecho click en el banner
         #op=download1&usr_login=&id=auoxxtvyquoy&fname=Star.Trek.Into.Darkness.2013.HD.m720p.LAT.avi&referer=&hash=1624-83-46-1377796019-c2b422f91da55d12737567a14ea3dffe&imhuman=Continue+to+Video

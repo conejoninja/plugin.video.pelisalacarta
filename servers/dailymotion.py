@@ -54,6 +54,7 @@ def find_videos(data):
 
     # http://www.dailymotion.com/embed/video/xrva9o
     # http://www.dailymotion.com/swf/video/xocczx
+    # http://www.dailymotion.com/swf/x17idxo&related=0
     patronvideos  = 'dailymotion.com/(?:embed|swf)/video/([a-z0-9]+)'
     logger.info("pelisalacarta.dailymotion find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
@@ -77,6 +78,21 @@ def find_videos(data):
         titulo = "[dailymotion]"
         url = "http://www.dailymotion.com/video/"+match
         if url not in encontrados:
+            logger.info("  url="+url)
+            devuelve.append( [ titulo , url , 'dailymotion' ] )
+            encontrados.add(url)
+        else:
+            logger.info("  url duplicada="+url)
+
+    # http://www.dailymotion.com/video/xrva9o
+    patronvideos  = 'dailymotion.com/swf/([a-z0-9]+)'
+    logger.info("pelisalacarta.dailymotion find_videos #"+patronvideos+"#")
+    matches = re.compile(patronvideos,re.DOTALL).findall(data)
+
+    for match in matches:
+        titulo = "[dailymotion]"
+        url = "http://www.dailymotion.com/video/"+match
+        if match<>"video" and url not in encontrados:
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'dailymotion' ] )
             encontrados.add(url)

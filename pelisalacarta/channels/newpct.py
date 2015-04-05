@@ -32,24 +32,63 @@ def mainlist(item):
     itemlist = []
     itemlist.append( Item(channel=__channel__, action="submenu" , title="Películas", url="http://www.newpct.com/include.inc/load.ajax/load.topbar.php?userName=", extra="Peliculas" ))
     itemlist.append( Item(channel=__channel__, action="submenu" , title="Series"   , url="http://www.newpct.com/include.inc/load.ajax/load.topbar.php?userName=", extra="Series" ))
-    #itemlist.append( Item(channel=__channel__, action="search"    , title="Buscar" ))
+    itemlist.append( Item(channel=__channel__, action="search"    , title="Buscar" ))
   
     return itemlist
 
 def search(item,texto):
     logger.info("[newpct.py] search")
-    if item.url=="":
-        item.url="http://jkanime.net/buscar/%s/"
     texto = texto.replace(" ","+")
-    item.url = item.url % texto
+    
+    item.url = "http://www.newpct.com/buscar-descargas/%s" % (texto)
     try:
-        return series(item)
-    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+        return buscador(item)
+    # Se captura la excepciÛn, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
             logger.error( "%s" % line )
         return []
+
+def buscador(item):
+    logger.info("[newpct.py] buscador")
+    itemlist = []
+    
+    # Descarga la página
+    data = scrapertools.cache_page(item.url)
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+    
+    #<td class="center" style="border-bottom:solid 1px cyan;">14-09-14</td><td style="border-bottom:solid 1px cyan;"><strong><a href="http://www.newpct.com/descargar-pelicula/malefica-3d-sbs/" title="M&aacute;s informaci&oacute;n sobre Malefica 3D SBS [BluRay 1080p][DTS 5.1-AC3 5.1 Castellano DTS 5.1-Ingles+Subs][ES-EN]"> <span class="searchTerm">Malefica</span> 3D SBS [BluRay 1080p][DTS 5.1-AC3 5.1 Castellano DTS 5.1-Ingles+Subs][ES-EN]</a></strong></td><td class="center" style="border-bottom:solid 1px cyan;">10.9 GB</td><td style="border-bottom:solid 1px cyan;"><a href="http://tumejorserie.com/descargar/index.php?link=torrents/059784.torrent" title="Descargar Malefica 3D SBS [BluRay 1080p][DTS 5.1-AC3 5.1 Castellano DTS 5.1-Ingles+Subs][ES-EN]"><img src="http://newpct.com/v2/imagenes//buttons/download.png"
+    
+    patron =  '<td class="center" style="border-bottom:solid 1px cyan;">([^<]+)</td>.*?' #createdate
+    patron += '<td class="center" style="border-bottom:solid 1px cyan;">([^<]+)</td>.*?' #info
+    patron += '<a href="([^"]+)" '                                                       #url
+    patron += 'title="Descargar([^"]+)">'                                                #title
+    patron += '<img src="([^"]+)"'                                                       #thumbnail
+    
+    
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    scrapertools.printMatches(matches)
+    
+    for scrapedcreatedate, scrapedinfo, scrapedurl, scrapedtitle, scrapedthumbnail in matches:
+        scrapedtitle = scrapedtitle + "(Tamaño:" + scrapedinfo + "--" + scrapedcreatedate+")"
+        
+        
+        
+        itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, action="play", server="torrent", thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, folder=True) )
+    
+    from servers import servertools
+    itemlist.extend(servertools.find_video_items(data=data))
+    for videoitem in itemlist:
+        videoitem.channel=__channel__
+        videoitem.action="play"
+        videoitem.folder=False
+    
+    
+    return itemlist
+
+#def play(item):
+
 
 def submenu(item):
     logger.info("[newpct.py] peliculas")

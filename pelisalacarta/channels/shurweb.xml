@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <version>
 	<name>shurweb</name>
-	<tag>5</tag>
-	<date>07/06/2012</date>
-	<changes>Ya se pueden añadir series a la biblioteca</changes>
+	<tag>6</tag>
+	<date>16/02/2014</date>
+	<changes>Corregido para funcionar con el nuevo dominio</changes>
 </version>

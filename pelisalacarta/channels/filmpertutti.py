@@ -27,23 +27,23 @@ def isGeneric():
 def mainlist(item):
     logger.info("pelisalacarta.filmpertutti mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Ultimi film inseriti", action="peliculas", url="http://www.filmxtutti.org/"))
-    itemlist.append( Item(channel=__channel__, title="Categorie film", action="categorias", url="http://www.filmxtutti.org/", extra="Categorie Film"))
-    itemlist.append( Item(channel=__channel__, title="Serie TV" , action="categorias", url="http://www.filmxtutti.org/", extra="Serie Tv"))
-    itemlist.append( Item(channel=__channel__, title="Anime Cartoon", action="categorias", url="http://www.filmxtutti.org/", extra="Anime Cartoon"))
-    itemlist.append( Item(channel=__channel__, action="search"     , title="Cerca" ))
+    itemlist.append( Item(channel=__channel__, title="Ultimi film inseriti", action="peliculas", url="http://www.filmpertutti.co/category/film/"))
+    itemlist.append( Item(channel=__channel__, title="Categorie film", action="categorias", url="http://www.filmxtutti.co/"))
+    itemlist.append( Item(channel=__channel__, title="Serie TV" , action="peliculas", url="http://www.filmpertutti.co/category/serie-tv/"))
+    itemlist.append( Item(channel=__channel__, title="Anime Cartoon Italiani", action="peliculas", url="http://www.filmpertutti.co/category/anime-cartoon-italiani/"))
+    itemlist.append( Item(channel=__channel__, title="Anime Cartoon Sub-ITA", action="peliculas", url="http://www.filmpertutti.co/category/anime-cartoon-sub-ita/"))
+    itemlist.append( Item(channel=__channel__, title="Cerca...", action="search"))
     return itemlist
-
 
 def categorias(item):
     itemlist = []
     
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
-    data = scrapertools.get_match(data,'<option value=".">'+item.extra+'</option>(.*?)</select>')
+    data = scrapertools.get_match(data,'<div class="new_home_bottom_link">(.*?)</div>')
     
     # Extrae las entradas (carpetas)
-    patron  = '<option value="([^"]+)">([^<]+)</option>'
+    patron  = '<a href="([^"]+)">([^<]+)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
