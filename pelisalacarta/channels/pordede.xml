@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <version>
 	<name>pordede</name>
-	<tag>4</tag>
-	<date>08/02/2015</date>
-	<changes>Mejoras y arreglos, ahora se pueden ordenar enlaces desde la configuracion.</changes>
+	<tag>5</tag>
+	<date>16/04/2015</date>
+	<changes>Intento de arreglo para la proteccion anti-DDoS que tiene el canal.</changes>
 </version>
