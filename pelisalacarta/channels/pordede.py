@@ -342,8 +342,15 @@ def episodios(item):
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     if config.get_platform().startswith("xbmc") or config.get_platform().startswith("boxee"):
-        itemlist.append( Item(channel='pordede', title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios###", show=item.show) )
-        itemlist.append( Item(channel='pordede', title="Descargar todos los episodios de la serie", url=item.url, action="download_all_episodes", extra="episodios", show=item.show))
+        # con año y valoracion la serie no se puede actualizar correctamente, si ademas cambia la valoracion, creara otra carpeta
+        # Sin año y sin valoración:
+        show = re.sub(r"\s\(\d+\)\s\(\d+\.\d+\)", "", item.show)
+        # Sin año:
+        #show = re.sub(r"\s\(\d+\)", "", item.show)
+        # Sin valoración:
+        #show = re.sub(r"\s\(\d+\.\d+\)", "", item.show)
+        itemlist.append( Item(channel='pordede', title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios###", show=show) )
+        itemlist.append( Item(channel='pordede', title="Descargar todos los episodios de la serie", url=item.url, action="download_all_episodes", extra="episodios", show=show))
 
     return itemlist
 
