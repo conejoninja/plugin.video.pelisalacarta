@@ -66,7 +66,7 @@ def menuseries(item):
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/series/loadmedia/offset/0/showlist/hot" ))
     itemlist.append( Item(channel=__channel__, action="generos"   , title="Por géneros"          , url="http://www.pordede.com/series" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Siguiendo"            , url="http://www.pordede.com/series/following" ))
-    itemlist.append( Item(channel=__channel__, action="siguientes" , title="Siguientes Capítulos" , url="http://www.pordede.com" ))
+    itemlist.append( Item(channel=__channel__, action="siguientes" , title="Siguientes Capítulos" , url="http://www.pordede.com/index2.php" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Favoritas"            , url="http://www.pordede.com/series/favorite" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Pendientes"           , url="http://www.pordede.com/series/pending" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Terminadas"           , url="http://www.pordede.com/series/seen" ))
@@ -208,6 +208,7 @@ def siguientes(item):
     headers = DEFAULT_HEADERS[:]
     #headers.append(["Referer",item.extra])
     headers.append(["X-Requested-With","XMLHttpRequest"])
+
     data = scrapertools.cache_page(item.url,headers=headers)
     if (DEBUG): logger.info("data="+data)
 
