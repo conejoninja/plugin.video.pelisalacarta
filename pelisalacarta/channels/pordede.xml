@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <version>
 	<name>pordede</name>
-	<tag>5</tag>
-	<date>16/04/2015</date>
-	<changes>Intento de arreglo para la proteccion anti-DDoS que tiene el canal. Ahora el año y calificación no se incluyen al añadir una serie a la biblioteca</changes>
+	<tag>6</tag>
+	<date>22/04/2015</date>
+	<changes>Arreglo de siguientes capítulos</changes>
 </version>
