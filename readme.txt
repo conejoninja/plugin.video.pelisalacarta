@@ -193,5 +193,12 @@ Icons come from varios sources:
 - Some icons are from Crystal Clear Collection
 - Most of the banner icons came from @Wolfk
 
+
+
+-----------------------------------------
+-- Important                           --
+-----------------------------------------
+There's now an official repository here : https://github.com/tvalacarta/pelisalacarta
+
 And finally thanks to all my blog readers, who give me lot of ideas and support.
 
